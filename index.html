@@ -230,7 +230,7 @@
         .track-right { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
 
         .track-num { font-family: var(--font-mono); font-size: 0.75rem; color: #555; width: 20px; flex-shrink: 0; }
-        .play-btn { color: var(--accent-red); font-size: 0.8rem; cursor: pointer; user-select: none; width: 15px; text-align: center; flex-shrink: 0; }
+        .play-btn { color: var(--accent-red); font-size: 0.8rem; cursor: pointer; user-select: none; width: 15px; text-align: center; flex-shrink: 0; font-variant-emoji: text; }
         .track-name { flex-grow: 1; cursor: pointer; transition: opacity 0.2s, color 0.2s; }
         .track-name:hover { color: var(--accent-red); }
 
@@ -260,7 +260,7 @@
         .fake-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; text-decoration: none; display: block; overflow: hidden; }
         .fake-player img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%) brightness(0.4) contrast(1.2); transition: filter 0.3s, transform 0.5s; }
         .fake-player:hover img { filter: grayscale(0%) brightness(0.8) contrast(1.1); transform: scale(1.02); }
-        .play-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 4rem; color: rgba(255, 255, 255, 0.8); text-shadow: 0 0 15px rgba(0,0,0,0.8); transition: all 0.3s ease; }
+        .play-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 4rem; color: rgba(255, 255, 255, 0.8); text-shadow: 0 0 15px rgba(0,0,0,0.8); transition: all 0.3s ease; font-variant-emoji: text; }
         .fake-player:hover .play-overlay { color: var(--accent-red); transform: translate(-50%, -50%) scale(1.1); }
 
         .poem-block { text-align: center; }
@@ -383,6 +383,7 @@
             cursor: pointer;
             padding: 4px 6px;
             transition: color 0.2s, transform 0.15s;
+            font-variant-emoji: text;
         }
         .player-ctrl-btn:hover { color: var(--text-main); }
         .player-play-btn {
@@ -527,20 +528,48 @@
         }
 
         @media (max-width: 900px) {
-            .hero-layout { flex-direction: column; text-align: center; }
-            .hero-subtitle { justify-content: center; }
+            .hero { min-height: auto; padding: 70px 16px 55px; }
+            .hero-layout { flex-direction: column; text-align: center; gap: 28px; }
+            .hero-title { font-size: clamp(2.1rem, 10.2vw, 3.4rem); line-height: 1.05; margin-bottom: 18px; }
+            .hero-subtitle { justify-content: center; font-size: 0.8rem; }
             .hero-subtitle::before { display: none; }
-            .cat-container { width: 300px; height: 300px; margin-top: 40px; transform: none; }
-            .discography-grid { grid-template-columns: 1fr; }
-            .video-grid { grid-template-columns: 1fr; }
-            .lore-section { grid-template-columns: 1fr; }
-            .feedback-container { grid-template-columns: 1fr; }
+            .cat-container { width: min(290px, 80vw); height: min(290px, 80vw); margin-top: 15px; transform: none; }
+            .container { padding: 55px 16px; }
+            .section-header { flex-wrap: wrap; gap: 6px 14px; margin-bottom: 36px; }
+            .section-title { font-size: 2.35rem; margin-right: 0; }
+            .discography-grid { grid-template-columns: 1fr; gap: 45px; margin-bottom: 50px; }
+            .main-album { margin-bottom: 45px; }
+            .poetry-section { padding: 55px 16px; margin-bottom: 55px; }
+            .video-grid { grid-template-columns: 1fr; gap: 32px; }
+            .lore-section { grid-template-columns: 1fr; gap: 45px; margin-bottom: 60px; }
+            .lore-title { font-size: 1.85rem; }
+            .feedback-section { padding: 55px 0; }
+            .feedback-container { grid-template-columns: 1fr; padding: 0 16px; }
+            .feedback-img-wrapper { min-height: 280px; }
+            .feedback-content { padding: 10px 0; }
+            .feedback-title { font-size: 1.75rem; }
             .micro-hud { display: none; }
-            .album-card { flex-direction: column; align-items: center; text-align: left; }
-            .player-inner { grid-template-columns: 1fr; gap: 10px; padding: 10px 15px; }
+            .album-card { flex-direction: column; align-items: center; text-align: left; gap: 18px; }
+            .track-list { padding-right: 18px; }
+            .instruction-btn { padding: 16px 6px; font-size: 0.75rem; bottom: 20px; }
+            .modal-content { padding: 28px 20px; margin: 0 16px; }
+            .modal-title { font-size: 1.85rem; }
+            .player-inner {
+                grid-template-columns: 1fr auto;
+                grid-template-areas:
+                    "info right"
+                    "center center";
+                gap: 8px 10px;
+                padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+            }
+            .player-track-info { grid-area: info; gap: 10px; }
+            .player-cover { width: 40px; height: 40px; }
+            .player-title { font-size: 0.85rem; }
+            .player-center { grid-area: center; gap: 5px; }
+            .player-right { grid-area: right; gap: 8px; }
             .player-volume { display: none; }
-            body.player-open .instruction-btn { bottom: 155px; }
-            body.player-open .footer { padding-bottom: 170px; }
+            body.player-open .instruction-btn { bottom: calc(132px + env(safe-area-inset-bottom, 0px)); }
+            body.player-open .footer { padding-bottom: 160px; }
         }
     </style>
 </head>
@@ -603,7 +632,7 @@
                     <ul class="track-list">
                         <li class="track-item is-safe" data-audio="СПБ -  Страх и ненависть в Липецке.mp3" data-yt="https://www.youtube.com/watch?v=EkZ1UkWZ3OI">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Страх и ненависть в Липецке <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -616,7 +645,7 @@
                         </li>
                         <li class="track-item is-safe" data-audio="СПБ -  I can drink all night.mp3" data-yt="https://www.youtube.com/watch?v=lUFGSEV9_jQ">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">I can drink all night <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -629,7 +658,7 @@
                         </li>
                         <li class="track-item" data-audio="СПБ -  Не поступила.mp3" data-yt="https://www.youtube.com/watch?v=rBuPeqWfl3g">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Не поступила <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -642,7 +671,7 @@
                         </li>
                         <li class="track-item" data-audio="СПБ -  Две кореи.mp3" data-yt="https://www.youtube.com/watch?v=UJCkuUv_qpo">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Две кореи <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -655,7 +684,7 @@
                         </li>
                         <li class="track-item extended-track" data-audio="СПБ -  Логичный лесник.mp3" data-yt="https://www.youtube.com/watch?v=dxaejcxCQGI">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Логичный лесник</span>
                             </div>
                             <div class="track-right">
@@ -668,7 +697,7 @@
                         </li>
                         <li class="track-item" data-audio="СПБ -  Кондом.mp3" data-yt="https://www.youtube.com/watch?v=jRSPKdG1V-w">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Кондом <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -690,7 +719,7 @@
                     <ul class="track-list">
                         <li class="track-item is-safe" data-audio="Святослав Свидригайлов   супермаркет.mp3" data-yt="https://www.youtube.com/watch?v=dMBvu--9yfw">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Супермаркет <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -703,7 +732,7 @@
                         </li>
                         <li class="track-item" data-audio="Святослав Свидригайлов   вдвоём один.mp3" data-yt="https://www.youtube.com/watch?v=B65XJoNrjtk">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Вдвоем один <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -716,7 +745,7 @@
                         </li>
                         <li class="track-item is-safe" data-audio="Святослав Свидригайлов - fever.mp3" data-yt="https://www.youtube.com/watch?v=m0i_oLYMdkQ">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Fever <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -729,7 +758,7 @@
                         </li>
                         <li class="track-item" data-audio="Сатана Печёт Блины - Дорогая, наш сын продаёт кокаин.mp3" data-yt="https://www.youtube.com/watch?v=uU3dtVZi0HI">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Дорогая, наш сын продаёт кокаин <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -752,7 +781,7 @@
                     <ul class="track-list">
                         <li class="track-item extended-track" data-audio="СПБ - Жизнь это боль.mp3" data-yt="https://www.youtube.com/watch?v=B6VdlX2I954">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Жизнь это боль</span>
                             </div>
                             <div class="track-right">
@@ -765,7 +794,7 @@
                         </li>
                         <li class="track-item" data-audio="СПБ - Роисся.mp3" data-yt="https://www.youtube.com/watch?v=QgbzlpG4LQA">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Роисся <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -778,7 +807,7 @@
                         </li>
                         <li class="track-item is-safe" data-audio="СПБ - Два по сто.mp3" data-yt="https://www.youtube.com/watch?v=DbglIwjI-9I">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Два по сто <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -800,7 +829,7 @@
                     <ul class="track-list">
                         <li class="track-item" data-audio="Сатана Печёт Блины - О, Этот Прекрасный Мир!.mp3" data-yt="https://www.youtube.com/watch?v=ZBcVpLsiNds">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">О, Этот Прекрасный Мир! <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -813,7 +842,7 @@
                         </li>
                         <li class="track-item" data-audio="Сатана Печёт Блины - Ты умрёшь.mp3" data-yt="https://www.youtube.com/watch?v=z-WnUEhLgPw">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Ты умрёшь <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -836,7 +865,7 @@
                     <ul class="track-list">
                         <li class="track-item is-safe" data-audio="СПБ - Встреча.mp3" data-yt="https://www.youtube.com/watch?v=FCf-lFvgP0k">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Встреча <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -849,7 +878,7 @@
                         </li>
                         <li class="track-item" data-audio="СПБ - Непредсказуемая.mp3" data-yt="https://www.youtube.com/watch?v=5ffxATsAlYc">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Непредсказуемая <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -871,7 +900,7 @@
                     <ul class="track-list">
                         <li class="track-item" data-audio="СПБ - Асоциальный ублюдок.mp3" data-yt="https://www.youtube.com/watch?v=ubKpstMvslA">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Асоциальный ублюдок <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -884,7 +913,7 @@
                         </li>
                         <li class="track-item is-safe" data-audio="СПБ - Антоново сердце.mp3" data-yt="https://www.youtube.com/watch?v=wm2iPP-05do">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Антоново сердце <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -897,7 +926,7 @@
                         </li>
                         <li class="track-item is-safe" data-audio="СПБ - Бей меня по печени.mp3" data-yt="https://www.youtube.com/watch?v=3A19HsILG9g">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Бей меня по печени <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -922,7 +951,7 @@
                     <ul class="track-list">
                         <li class="track-item" data-audio="Сатана Печёт Блины - Простит Утка.mp3" data-yt="https://www.youtube.com/watch?v=y6vy1pD_H7c">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Простит Утка</span>
                             </div>
                             <div class="track-right">
@@ -935,7 +964,7 @@
                         </li>
                         <li class="track-item" data-audio="Сатана Печёт Блины - Forever Alone.mp3" data-yt="https://www.youtube.com/watch?v=LN8WeeXPLYE">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Forever Alone</span>
                             </div>
                             <div class="track-right">
@@ -948,7 +977,7 @@
                         </li>
                         <li class="track-item" data-audio="Сатана Печёт Блины - Блюз для жён, которых бьют мужья.mp3" data-yt="https://www.youtube.com/watch?v=RHc4jyoWln0">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Блюз для жён, которых бьют мужья</span>
                             </div>
                             <div class="track-right">
@@ -961,7 +990,7 @@
                         </li>
                         <li class="track-item" data-audio="Сатана Печёт Блины - Нормально.mp3" data-yt="https://www.youtube.com/watch?v=N0hcs5jCt6g">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Нормально</span>
                             </div>
                             <div class="track-right">
@@ -984,7 +1013,7 @@
                     <ul class="track-list">
                         <li class="track-item" data-audio="СПБ -  Мимо нот.mp3" data-yt="https://www.youtube.com/watch?v=dqXN_U-_hN0">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Мимо нот</span>
                             </div>
                             <div class="track-right">
@@ -997,7 +1026,7 @@
                         </li>
                         <li class="track-item" data-audio="СПБ -  Нас не найдёт твой сутенёр.mp3" data-yt="https://www.youtube.com/watch?v=AD7XHxyj1lM">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Нас не найдёт твой сутенёр</span>
                             </div>
                             <div class="track-right">
@@ -1020,7 +1049,7 @@
                     <ul class="track-list">
                         <li class="track-item" data-audio="Святослав Свидригайлов   хитиновый покров (oxxxymiron cover).mp3" data-yt="https://www.youtube.com/watch?v=YQR222mmEvM">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Хитиновый покров (oxxxymiron cover)</span>
                             </div>
                             <div class="track-right">
@@ -1033,7 +1062,7 @@
                         </li>
                         <li class="track-item" data-audio="Святослав Свидригайлов   морячок (арбенина cover).mp3" data-yt="https://www.youtube.com/watch?v=7xS4VAJ_9FU">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Морячок (арбенина cover)</span>
                             </div>
                             <div class="track-right">
@@ -1056,7 +1085,7 @@
                     <ul class="track-list">
                         <li class="track-item" data-audio="СПБ - Обычный мужик.mp3" data-yt="https://www.youtube.com/watch?v=BJ5cLn9zOe8">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Обычный мужик</span>
                             </div>
                             <div class="track-right">
@@ -1069,7 +1098,7 @@
                         </li>
                         <li class="track-item" data-audio="СПБ - Мёртвый мужик.mp3" data-yt="https://www.youtube.com/watch?v=l0v8kYP6MlY">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Мертвый мужик</span>
                             </div>
                             <div class="track-right">
@@ -1092,7 +1121,7 @@
                     <ul class="track-list">
                         <li class="track-item is-safe" data-audio="СПБ - Утро.mp3" data-yt="https://www.youtube.com/watch?v=inHBimJx3PQ">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Утро <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -1105,7 +1134,7 @@
                         </li>
                         <li class="track-item is-safe" data-audio="СПБ - Бананка.mp3" data-yt="https://www.youtube.com/watch?v=9ApeafbgZhY">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Бананка <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -1118,7 +1147,7 @@
                         </li>
                         <li class="track-item" data-audio="СПБ - No pasaran.mp3" data-yt="https://www.youtube.com/watch?v=E6DH5Fn0-A8">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">No pasaran <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -1131,7 +1160,7 @@
                         </li>
                         <li class="track-item is-safe" data-audio="СПБ - Весело жить.mp3" data-yt="https://www.youtube.com/watch?v=6bB00qWi4to">
                             <div class="track-left">
-                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                                 <span class="track-name">Весело жить <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                             </div>
                             <div class="track-right">
@@ -1161,7 +1190,7 @@
                     <div class="video-wrapper">
                         <a href="https://www.youtube.com/watch?v=G10-G5jnCec" target="_blank" rel="noopener noreferrer" class="fake-player">
                             <img src="https://img.youtube.com/vi/G10-G5jnCec/hqdefault.jpg" alt="С бледной брюнеткой без имени">
-                            <div class="play-overlay">▶</div>
+                            <div class="play-overlay">▶&#xFE0E;</div>
                         </a>
                     </div>
                     <div class="poem-block">
@@ -1172,7 +1201,7 @@
                     <div class="video-wrapper">
                         <a href="https://www.youtube.com/watch?v=3XXaFXCrHtQ" target="_blank" rel="noopener noreferrer" class="fake-player">
                             <img src="https://img.youtube.com/vi/3XXaFXCrHtQ/hqdefault.jpg" alt="Сырный суп">
-                            <div class="play-overlay">▶</div>
+                            <div class="play-overlay">▶&#xFE0E;</div>
                         </a>
                     </div>
                     <div class="poem-block">
@@ -1196,7 +1225,7 @@
                 <ul class="track-list" style="margin-top: 20px;">
                     <li class="track-item is-safe" data-audio="СПБ - Селфи (ft. Монеточка).mp3" data-yt="https://www.youtube.com/watch?v=tgxF6kvN408" data-cover="c11.png">
                         <div class="track-left">
-                            <span class="track-num"></span><span class="play-btn">▶</span>
+                            <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                             <span class="track-name">Селфи <img src="3.png" class="dostoevsky-icon" alt="!"></span>
                         </div>
                         <div class="track-right">
@@ -1209,7 +1238,7 @@
                     </li>
                     <li class="track-item" data-audio="Сатана Печет Блины - About Us (Монеточка feat).mp3" data-yt="https://www.youtube.com/watch?v=tsvcDItrZbc" data-cover="c12.png">
                         <div class="track-left">
-                            <span class="track-num"></span><span class="play-btn">▶</span>
+                            <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                             <span class="track-name">About Us</span>
                         </div>
                         <div class="track-right">
@@ -1222,7 +1251,7 @@
                     </li>
                     <li class="track-item" data-audio="Монеточка - НТВ (на стихи Святослава Свидригайлова), Санкт-Петербург 26.10.2018 Аврора.mp3" data-yt="https://www.youtube.com/watch?v=7RaKh8DVWY4" data-cover="c12.png">
                         <div class="track-left">
-                            <span class="track-num"></span><span class="play-btn">▶</span>
+                            <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                             <span class="track-name">НТВ</span>
                         </div>
                         <div class="track-right">
@@ -1243,7 +1272,7 @@
                 <ul class="track-list" style="margin-top: 20px; border-top: 1px solid #222; margin-bottom: 30px;">
                     <li class="track-item" data-audio="алёна швец. – голосовые сообщения (Official audio).mp3" data-yt="https://www.youtube.com/watch?v=MzO09MrKdT4" data-cover="c13.png">
                         <div class="track-left">
-                            <span class="track-num"></span><span class="play-btn">▶</span>
+                            <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                             <span class="track-name">голосовые сообщения</span>
                         </div>
                         <div class="track-right">
@@ -1256,7 +1285,7 @@
                     </li>
                     <li class="track-item" data-audio="алёна швецрыжая бестия  - Свидригайлов, как пахнет твоё запястье.mp3" data-yt="https://www.youtube.com/watch?v=yWnGdQY-GnU" data-cover="c14.png">
                         <div class="track-left">
-                            <span class="track-num"></span><span class="play-btn">▶</span>
+                            <span class="track-num"></span><span class="play-btn">▶&#xFE0E;</span>
                             <span class="track-name">Свидригайлов, как пахнет твоё запястье</span>
                         </div>
                         <div class="track-right">
@@ -1272,7 +1301,7 @@
                 <div class="video-wrapper">
                     <a href="https://www.youtube.com/watch?v=XXzEvZOQzHg" target="_blank" rel="noopener noreferrer" class="fake-player">
                         <img src="https://img.youtube.com/vi/XXzEvZOQzHg/hqdefault.jpg" alt="Альона Швець">
-                        <div class="play-overlay">▶</div>
+                        <div class="play-overlay">▶&#xFE0E;</div>
                     </a>
                 </div>
             </div>
@@ -1326,9 +1355,9 @@
 
             <div class="player-center">
                 <div class="player-controls">
-                    <button id="prevBtn" class="player-ctrl-btn" type="button" title="Попередній трек">⏮</button>
-                    <button id="mainPlayBtn" class="player-ctrl-btn player-play-btn" type="button" title="Відтворити / Пауза">▶</button>
-                    <button id="nextBtn" class="player-ctrl-btn" type="button" title="Наступний трек">⏭</button>
+                    <button id="prevBtn" class="player-ctrl-btn" type="button" title="Попередній трек">⏮&#xFE0E;</button>
+                    <button id="mainPlayBtn" class="player-ctrl-btn player-play-btn" type="button" title="Відтворити / Пауза">▶&#xFE0E;</button>
+                    <button id="nextBtn" class="player-ctrl-btn" type="button" title="Наступний трек">⏭&#xFE0E;</button>
                 </div>
                 <div class="player-progress-row">
                     <span id="currentTime" class="player-time">0:00</span>
@@ -1492,9 +1521,9 @@
             allTrackItems.forEach(item => {
                 const btn = item.querySelector('.play-btn');
                 if (!btn) return;
-                btn.textContent = (item === currentItem && isPlaying) ? '⏸' : '▶';
+                btn.textContent = (item === currentItem && isPlaying) ? '⏸\uFE0E' : '▶\uFE0E';
             });
-            mainPlayBtn.textContent = isPlaying ? '⏸' : '▶';
+            mainPlayBtn.textContent = isPlaying ? '⏸\uFE0E' : '▶\uFE0E';
         }
 
         function clearStatus() {
