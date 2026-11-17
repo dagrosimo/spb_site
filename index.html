@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сатана Печет Блины // Архів</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0c0b0a;
+            --text-main: #f0f0f0;
+            --text-muted: #888;
+            --accent-red: #b02a2a;
+            --accent-yellow: #d4a355;
+            --font-serif: 'Cormorant Garamond', serif;
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- NAVIGATION / INSTRUCTION UI --- */
+        .instruction-btn {
+            position: fixed;
+            right: 0;
+            bottom: 30px;
+            transform: translateX(100%);
+            background: var(--accent-red);
+            color: #fff;
+            padding: 25px 8px;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            writing-mode: vertical-rl;
+            cursor: pointer;
+            z-index: 100;
+            border: 1px solid #333;
+            border-right: none;
+            transition: background 0.3s, bottom 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: slideInRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards 1s, pulse-glow 2.5s infinite 1.6s;
+        }
+
+        body.player-open .instruction-btn {
+            bottom: 105px;
+        }
+
+        .instruction-btn:hover { background: #8a1f1f; animation-play-state: paused; }
+
+        @keyframes slideInRight { to { transform: translateX(0); } }
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(176, 42, 42, 0.6); }
+            70% { box-shadow: 0 0 0 15px rgba(176, 42, 42, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(176, 42, 42, 0); }
+        }
+
+        .instruction-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(8px);
+            z-index: 200; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+
+        .instruction-modal.active { opacity: 1; pointer-events: auto; }
+
+        .modal-content {
+            background: #111; border: 1px solid #333; padding: 40px;
+            max-width: 500px; margin: 0 20px; text-align: center; position: relative;
+            transform: translateY(20px); transition: transform 0.3s ease;
+        }
+
+        .instruction-modal.active .modal-content { transform: translateY(0); }
+        .modal-title { font-family: var(--font-serif); font-size: 2.2rem; color: var(--text-main); margin-bottom: 10px; }
+        .modal-text { font-family: var(--font-mono); font-size: 0.85rem; color: #aaa; margin-bottom: 30px; line-height: 1.6; }
+        .modal-close { position: absolute; top: 10px; right: 15px; font-family: var(--font-mono); font-size: 1.5rem; color: #555; cursor: pointer; transition: color 0.2s; }
+        .modal-close:hover { color: var(--accent-red); }
+
+        .mode-buttons { display: flex; flex-direction: column; gap: 10px; }
+        .mode-btn {
+            background: #0a0908; color: #888; font-family: var(--font-mono); font-size: 0.9rem;
+            text-transform: uppercase; border: 1px solid #333; padding: 15px; cursor: pointer; transition: all 0.2s;
+        }
+        .mode-btn:hover { border-color: #666; color: #ccc; }
+        .mode-btn.active { background: var(--accent-red); color: #fff; border-color: var(--accent-red); font-weight: 700; }
+
+        /* MODES LOGIC */
+        .dostoevsky-icon {
+            display: none; width: 18px; height: 18px; border-radius: 50%;
+            margin-left: 10px; vertical-align: middle; filter: grayscale(80%) contrast(1.2); border: 1px solid #444;
+        }
+        .track-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #222; font-size: 0.95rem; transition: opacity 0.4s ease; gap: 10px; }
+
+        /* Safe Mode */
+        body.mode-safe .track-item:not(.is-safe) { opacity: 0.25; }
+        body.mode-safe .track-item.is-safe .dostoevsky-icon { display: inline-block; }
+        body.mode-safe .track-item.is-safe .track-name { color: var(--accent-red); }
+
+        /* Extended Mode */
+        .track-item.extended-track { display: none !important; }
+        body.mode-extended .track-item.extended-track { display: flex !important; animation: trackFadeIn 0.5s ease forwards; }
+        body.mode-extended .track-item.extended-track .track-name { color: #a37c7c; }
+        body.mode-extended .track-item.extended-track .track-name:hover { color: var(--accent-red); }
+
+        .extended-album { display: none !important; }
+        body.mode-extended .extended-album { display: flex !important; animation: trackFadeIn 0.5s ease forwards; }
+        body.mode-extended .extended-album .track-name { color: #a37c7c; }
+        body.mode-extended .extended-album .track-name:hover { color: var(--accent-red); }
+
+        @keyframes trackFadeIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* Dynamic Track Numbering */
+        .track-list { counter-reset: track-counter; }
+        .track-item:not(.extended-track) { counter-increment: track-counter; }
+        body.mode-extended .extended-track { counter-increment: track-counter; }
+        .track-num::before { content: counter(track-counter, decimal-leading-zero); }
+
+        /* Active Playing Track State */
+        .track-item.is-playing { opacity: 1 !important; }
+        .track-item.is-playing .track-name { color: var(--accent-red) !important; font-weight: 500; }
+        .track-item.is-playing .track-num { color: var(--accent-yellow); }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            position: relative; min-height: 90vh; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; border-bottom: 1px solid #222; padding: 100px 20px;
+        }
+        .hero-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('1.png'); background-size: cover;
+            background-position: calc(50% - 20px) calc(50% + 4px);
+            transform: scale(1.05);
+            filter: grayscale(100%) contrast(1.5) brightness(0.20); z-index: 1;
+        }
+        .hero-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(12,11,10,0.4) 0%, rgba(12,11,10,0.95) 100%); z-index: 2;
+        }
+        .micro-hud { position: absolute; font-family: var(--font-mono); font-size: 0.65rem; color: #777; letter-spacing: 0.15em; text-transform: uppercase; z-index: 4; }
+        .hud-top-left { top: 40px; left: 40px; }
+        .hud-top-right { top: 40px; right: 40px; }
+        .hud-bottom-left { bottom: 40px; left: 40px; }
+        .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+        .dot.yellow { background-color: var(--accent-yellow); box-shadow: 0 0 5px rgba(212, 163, 85, 0.4); }
+        .dot.red { background-color: var(--accent-red); box-shadow: 0 0 5px rgba(176, 42, 42, 0.4); }
+
+        .hero-layout { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1200px; gap: 40px; }
+        .hero-text-col { flex: 1; }
+        .hero-title { font-family: var(--font-serif); font-size: clamp(3.5rem, 8vw, 7rem); font-weight: 700; line-height: 0.95; letter-spacing: -0.02em; margin-bottom: 25px; text-transform: uppercase; }
+        .hero-subtitle { font-family: var(--font-mono); font-size: 0.9rem; color: #aaa; letter-spacing: 0.1em; text-transform: uppercase; display: flex; align-items: center; }
+        .hero-subtitle::before { content: ''; display: block; width: 40px; height: 1px; background-color: var(--accent-red); margin-right: 15px; }
+        .hero-img-col { flex-shrink: 0; position: relative; }
+
+        .cat-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            transform: translate(-20px, 4px);
+        }
+
+        .hero-main-img {
+            width: 100%; height: 100%; transform: rotate(3deg); border: 1px solid #333;
+            box-shadow: -15px 15px 0px rgba(176, 42, 42, 0.15); transition: transform 0.3s ease;
+            position: relative; z-index: 5; cursor: pointer;
+        }
+        .hero-main-img::after { content: 'FIG. 1'; position: absolute; bottom: -25px; right: 0; font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent-yellow); }
+        .hero-main-img:hover { transform: rotate(0deg); }
+        .hero-main-img img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Текст под картинками */
+        .hidden-message, .feedback-hidden-message {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 4; text-align: center; width: 100%;
+            opacity: 0; pointer-events: none; transition: opacity 1.5s ease;
+        }
+        .hidden-message { font-family: var(--font-mono); font-size: 1.15rem; color: var(--accent-red); padding: 0 15px; }
+        .feedback-hidden-message { font-family: var(--font-serif); font-size: 1.5rem; color: #aaa; padding: 0 15px; }
+
+        .hidden-message.revealed, .feedback-hidden-message.revealed { opacity: 1; pointer-events: auto; }
+
+        @keyframes shake {
+            0%, 30%, 60%, 90% { transform: translate(1px, 1px) rotate(0deg); }
+            10%, 40%, 70%, 100% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20%, 50%, 80% { transform: translate(-3px, 0px) rotate(1deg); }
+        }
+        @keyframes fall {
+            0% { transform: rotate(0deg); top: 0; opacity: 1; }
+            100% { transform: rotate(45deg); top: 1000px; opacity: 0; display: none; }
+        }
+
+        .shaking { animation: shake 0.5s infinite; }
+        .falling { animation: fall 1.5s forwards ease-in; pointer-events: none; }
+
+        /* --- MAIN CONTAINER --- */
+        .container { max-width: 1200px; margin: 0 auto; padding: 80px 20px; }
+        .section-header { display: flex; align-items: baseline; margin-bottom: 60px; border-bottom: 1px solid #222; padding-bottom: 10px; }
+        .section-title { font-family: var(--font-serif); font-size: 3rem; font-weight: 600; margin-right: 20px; }
+        .section-subtitle { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; }
+
+        /* --- DISCOGRAPHY GRID --- */
+        .discography-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 60px 40px; margin-bottom: 80px; }
+        .album-card { display: flex; gap: 30px; align-items: flex-start; }
+        .album-cover { width: 130px; height: 130px; background-color: #111; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 0.8rem; color: #666; flex-shrink: 0; border: 1px solid #222; overflow: hidden; }
+
+        .album-cover img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.65) contrast(1.1); transition: filter 0.3s ease; }
+        .album-cover:hover img { filter: brightness(0.85) contrast(1.1); }
+
+        .album-info { flex-grow: 1; width: 100%; min-width: 0; }
+        .album-title {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent-yellow);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+
+        .track-list { list-style: none; display: flex; flex-direction: column; width: 100%; border-top: 1px solid #222; }
+
+        /* Плеер и ссылки */
+        .track-left { display: flex; align-items: center; gap: 12px; flex-grow: 1; min-width: 0; }
+        .track-right { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
+
+        .track-num { font-family: var(--font-mono); font-size: 0.75rem; color: #555; width: 20px; flex-shrink: 0; }
+        .play-btn { color: var(--accent-red); font-size: 0.8rem; cursor: pointer; user-select: none; width: 15px; text-align: center; flex-shrink: 0; }
+        .track-name { flex-grow: 1; cursor: pointer; transition: opacity 0.2s, color 0.2s; }
+        .track-name:hover { color: var(--accent-red); }
+
+        .track-links { display: flex; gap: 8px; align-items: center; }
+        .track-links a { display: flex; align-items: center; opacity: 0.5; transition: opacity 0.2s; }
+        .track-links a:hover { opacity: 1; }
+        .track-links img { width: 16px; height: 16px; filter: grayscale(100%); transition: filter 0.2s; }
+        .track-links a:hover img { filter: grayscale(0%); }
+
+        /* Стили для отсутствующего Spotify */
+        .track-links a.sp-missing { opacity: 0.2; cursor: pointer; }
+        .track-links a.sp-missing:hover { opacity: 0.4; }
+
+        .track-time { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); min-width: 42px; text-align: right; }
+
+        .main-album { grid-column: 1 / -1; max-width: 800px; width: 100%; margin: 0 auto 60px auto; }
+        .main-album .album-cover { width: 160px; height: 160px; }
+
+        /* --- POETRY & VIDEO SECTION --- */
+        .poetry-section { background-color: #0a0908; padding: 80px 20px; margin: 0 auto 80px auto; border-top: 1px solid #1a1a1a; border-bottom: 1px solid #1a1a1a; }
+        .poetry-content { max-width: 1200px; margin: 0 auto; }
+        .video-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .video-column { display: flex; flex-direction: column; gap: 20px; }
+        .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; background-color: #000; border: 1px solid #333; }
+
+        /* Стили для превью-плееров YouTube */
+        .fake-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; text-decoration: none; display: block; overflow: hidden; }
+        .fake-player img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%) brightness(0.4) contrast(1.2); transition: filter 0.3s, transform 0.5s; }
+        .fake-player:hover img { filter: grayscale(0%) brightness(0.8) contrast(1.1); transform: scale(1.02); }
+        .play-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 4rem; color: rgba(255, 255, 255, 0.8); text-shadow: 0 0 15px rgba(0,0,0,0.8); transition: all 0.3s ease; }
+        .fake-player:hover .play-overlay { color: var(--accent-red); transform: translate(-50%, -50%) scale(1.1); }
+
+        .poem-block { text-align: center; }
+        .poem-text { font-family: var(--font-serif); font-size: 1.2rem; font-style: italic; line-height: 1.6; color: #ccc; }
+
+        /* --- LORE SECTION --- */
+        .lore-section { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; margin-bottom: 100px; }
+        .lore-block { border-top: 2px solid var(--accent-red); padding-top: 20px; }
+        .lore-block h3 { font-family: var(--font-mono); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 15px; color: var(--accent-red); }
+        .lore-title { font-family: var(--font-serif); font-size: 2.2rem; margin-bottom: 20px; line-height: 1.2; }
+        .lore-text { font-size: 0.95rem; color: #aaa; line-height: 1.7; }
+
+        /* --- FEEDBACK SECTION --- */
+        .feedback-section { background-color: #050505; padding: 80px 0; border-top: 1px solid #222; }
+        .feedback-container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; padding: 0 20px; }
+        .feedback-img-wrapper { position: relative; width: 100%; height: 100%; min-height: 400px; }
+        .feedback-img { position: relative; width: 100%; border: 1px solid #222; filter: grayscale(80%) brightness(0.45) contrast(1.3); z-index: 5; cursor: pointer; transition: filter 0.3s; }
+        .feedback-img:hover { filter: grayscale(80%) brightness(0.6) contrast(1.3); }
+        .feedback-content { padding: 20px; }
+        .feedback-title { font-family: var(--font-serif); font-size: 2rem; margin-bottom: 20px; color: var(--accent-red); }
+
+        .brutalist-form { display: flex; flex-direction: column; gap: 15px; }
+        .brutalist-textarea { background: #0a0908; color: var(--text-main); border: 1px dashed #444; padding: 15px; font-family: var(--font-mono); font-size: 0.9rem; resize: vertical; min-height: 120px; outline: none; transition: border-color 0.2s; }
+        .brutalist-textarea:focus { border-color: var(--accent-red); }
+        .brutalist-btn { background: var(--accent-red); color: #fff; font-family: var(--font-mono); font-size: 0.9rem; text-transform: uppercase; border: none; padding: 15px; cursor: pointer; transition: background 0.2s; }
+        .brutalist-btn:hover { background: #8a1f1f; }
+        .success-banner { display: none; background: #111; border-left: 3px solid var(--accent-yellow); padding: 20px; font-family: var(--font-mono); font-size: 0.9rem; color: var(--accent-yellow); line-height: 1.5; }
+
+        .footer { text-align: center; padding: 40px 20px; border-top: 1px solid #222; font-family: var(--font-mono); font-size: 0.8rem; color: #555; background-color: #000; transition: padding-bottom 0.35s ease; }
+        body.player-open .footer { padding-bottom: 120px; }
+
+        /* --- STICKY INTERNAL AUDIO PLAYER BAR --- */
+        .player-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 150;
+            background: rgba(12, 11, 10, 0.96);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid #333;
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        body.player-open .player-bar {
+            transform: translateY(0);
+        }
+        .player-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: grid;
+            grid-template-columns: minmax(180px, 1.2fr) minmax(240px, 1.8fr) auto;
+            align-items: center;
+            gap: 20px;
+        }
+        .player-track-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+        .player-cover {
+            width: 46px;
+            height: 46px;
+            object-fit: cover;
+            border: 1px solid #333;
+            flex-shrink: 0;
+            filter: brightness(0.85) contrast(1.1);
+        }
+        .player-meta {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .player-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .player-album {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--accent-yellow);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .player-status {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--accent-red);
+            margin-top: 2px;
+            display: none;
+        }
+        .player-status.visible {
+            display: block;
+        }
+        .player-center {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+        .player-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+        }
+        .player-ctrl-btn {
+            background: transparent;
+            border: none;
+            color: #aaa;
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 4px 6px;
+            transition: color 0.2s, transform 0.15s;
+        }
+        .player-ctrl-btn:hover { color: var(--text-main); }
+        .player-play-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+        }
+        .player-play-btn:hover {
+            background: var(--accent-red);
+            color: #fff;
+        }
+        .player-progress-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .player-time {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            min-width: 34px;
+            text-align: center;
+        }
+        .player-progress-bar {
+            flex: 1;
+            height: 6px;
+            background: #222;
+            cursor: pointer;
+            position: relative;
+        }
+        .player-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--accent-red);
+            transition: width 0.1s linear;
+        }
+        .player-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .player-volume {
+            width: 75px;
+            accent-color: var(--accent-red);
+            cursor: pointer;
+        }
+        .player-yt-btn,
+        .player-sp-btn {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: #ccc;
+            text-decoration: none;
+            border: 1px solid #333;
+            padding: 5px 9px;
+            transition: border-color 0.2s, color 0.2s, background 0.2s;
+            white-space: nowrap;
+        }
+        .player-yt-btn:hover {
+            border-color: var(--accent-red);
+            color: #fff;
+            background: rgba(176, 42, 42, 0.2);
+        }
+        .player-sp-btn:hover {
+            border-color: #1db954;
+            color: #fff;
+            background: rgba(29, 185, 84, 0.16);
+        }
+        .player-sp-btn.is-hidden {
+            display: none;
+        }
+        .player-yt-btn.pulse {
+            border-color: var(--accent-red);
+            color: #fff;
+            background: var(--accent-red);
+            animation: pulse-glow 1.6s infinite;
+        }
+        .player-close-btn {
+            background: transparent;
+            border: none;
+            color: #666;
+            font-family: var(--font-mono);
+            font-size: 1.3rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 2px 6px;
+        }
+        .player-close-btn:hover { color: var(--accent-red); }
+
+        /* --- HEAD CONFETTI & THANK YOU OVERLAY --- */
+        .confetti-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9998;
+        }
+        .thank-you-overlay {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0;
+            background: radial-gradient(circle at center, rgba(12, 11, 10, 0.58) 0%, rgba(12, 11, 10, 0) 65%);
+            transition: opacity 0.85s ease;
+        }
+        .thank-you-overlay.visible {
+            opacity: 1;
+        }
+        .thank-you-text {
+            font-family: var(--font-serif);
+            font-size: clamp(2.6rem, 7.5vw, 5.4rem);
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.08;
+            letter-spacing: -0.01em;
+            background: linear-gradient(120deg, #ff4d8d, #ffd166, #06d6a0, #4cc9f0, #c77dff, #ff4d8d);
+            background-size: 240% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: drop-shadow(0 6px 26px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 18px rgba(255, 110, 180, 0.35));
+            transform: scale(0.86) translateY(14px);
+            transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: thankYouShimmer 3.2s linear infinite;
+        }
+        .thank-you-overlay.visible .thank-you-text {
+            transform: scale(1) translateY(0);
+        }
+        @keyframes thankYouShimmer {
+            0% { background-position: 0% center; }
+            100% { background-position: 240% center; }
+        }
+
+        @media (max-width: 900px) {
+            .hero-layout { flex-direction: column; text-align: center; }
+            .hero-subtitle { justify-content: center; }
+            .hero-subtitle::before { display: none; }
+            .cat-container { width: 300px; height: 300px; margin-top: 40px; transform: none; }
+            .discography-grid { grid-template-columns: 1fr; }
+            .video-grid { grid-template-columns: 1fr; }
+            .lore-section { grid-template-columns: 1fr; }
+            .feedback-container { grid-template-columns: 1fr; }
+            .micro-hud { display: none; }
+            .album-card { flex-direction: column; align-items: center; text-align: left; }
+            .player-inner { grid-template-columns: 1fr; gap: 10px; padding: 10px 15px; }
+            .player-volume { display: none; }
+            body.player-open .instruction-btn { bottom: 155px; }
+            body.player-open .footer { padding-bottom: 170px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- INSTRUCTION UI -->
+    <div class="instruction-btn" id="instructionBtn">Інструкція</div>
+    <div class="instruction-modal" id="instructionModal">
+        <div class="modal-content">
+            <span class="modal-close" id="closeModalBtn">&times;</span>
+            <h3 class="modal-title">Контроль вайбу</h3>
+            <p class="modal-text">Обери, наскільки глибоко ти хочеш зануритися. Для того щоб пройтись по базі вистачить сейф моду. Якщо хочеш більш цілісно викупити - стандарт. Ну а для самих відчайдушних і сміливих дівчаток розширений режим....</p>
+            <div class="mode-buttons">
+                <button class="mode-btn active" data-mode="normal">Стандартний Архів</button>
+                <button class="mode-btn" data-mode="safe">Safe Mode (Маст-лісен)</button>
+                <button class="mode-btn" data-mode="extended">Extended (Приховані треки)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-overlay"></div>
+
+        <div class="micro-hud hud-top-left"><span class="dot yellow"></span> ARCHIVE_VOL_01</div>
+        <div class="micro-hud hud-top-right">REC_MODE: ON <span class="dot red"></span></div>
+        <div class="micro-hud hud-bottom-left">SYS.INF // 51.7592°N 19.4560°E</div>
+
+        <div class="hero-layout">
+            <div class="hero-text-col">
+                <h1 class="hero-title">Святослав<br>Свидригайлов</h1>
+                <div class="hero-subtitle">Сатана печет блины</div>
+            </div>
+            <div class="hero-img-col">
+                <div class="cat-container">
+                    <!-- ПЕРСОНАЛЬНЫЙ ТЕКСТ: сообщение под котом -->
+                    <div class="hidden-message">Упс... Котик пішов.<br>Тепер на сайті тільки один котик🥰</div>
+                    <div class="hero-main-img" id="catImage">
+                        <img src="2.png" alt="Кіт">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DISCOGRAPHY SECTION -->
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Архів</h2>
+            <span class="section-subtitle">Discography</span>
+        </div>
+        <div class="discography-grid">
+
+            <!-- ROW 1 -->
+            <div class="album-card">
+                <div class="album-cover"><img src="c1.png" alt="Обыватель"></div>
+                <div class="album-info">
+                    <div class="album-title">Обыватель // 2013</div>
+                    <ul class="track-list">
+                        <li class="track-item is-safe" data-audio="СПБ -  Страх и ненависть в Липецке.mp3" data-yt="https://www.youtube.com/watch?v=EkZ1UkWZ3OI">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Страх и ненависть в Липецке <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=EkZ1UkWZ3OI" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/4xbYbTWpBvbrs1oQ93EWZq" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:10</span>
+                            </div>
+                        </li>
+                        <li class="track-item is-safe" data-audio="СПБ -  I can drink all night.mp3" data-yt="https://www.youtube.com/watch?v=lUFGSEV9_jQ">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">I can drink all night <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=lUFGSEV9_jQ" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/4WXYhzmosU1B73hUCSTlje?autoplay_ok=1" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">1:17</span>
+                            </div>
+                        </li>
+                        <li class="track-item" data-audio="СПБ -  Не поступила.mp3" data-yt="https://www.youtube.com/watch?v=rBuPeqWfl3g">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Не поступила <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=rBuPeqWfl3g" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/5511reW8lMqzjR1FO87PKn" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:57</span>
+                            </div>
+                        </li>
+                        <li class="track-item" data-audio="СПБ -  Две кореи.mp3" data-yt="https://www.youtube.com/watch?v=UJCkuUv_qpo">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Две кореи <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=UJCkuUv_qpo" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/1t44aidkIdPOQiXuQBGekC?autoplay_ok=1" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:27</span>
+                            </div>
+                        </li>
+                        <li class="track-item extended-track" data-audio="СПБ -  Логичный лесник.mp3" data-yt="https://www.youtube.com/watch?v=dxaejcxCQGI">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Логичный лесник</span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=dxaejcxCQGI" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/5n7LyfvDvcW0fltfiuFMYW" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:03</span>
+                            </div>
+                        </li>
+                        <li class="track-item" data-audio="СПБ -  Кондом.mp3" data-yt="https://www.youtube.com/watch?v=jRSPKdG1V-w">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Кондом <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=jRSPKdG1V-w" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/6iovDyJwRh4Vx6vg0KyTz6" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">3:51</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="album-card">
+                <div class="album-cover"><img src="c2.png" alt="Синглы"></div>
+                <div class="album-info">
+                    <div class="album-title">Синглы // 2013</div>
+                    <ul class="track-list">
+                        <li class="track-item is-safe" data-audio="Святослав Свидригайлов   супермаркет.mp3" data-yt="https://www.youtube.com/watch?v=dMBvu--9yfw">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Супермаркет <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=dMBvu--9yfw" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="#" class="sp-missing"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">1:43</span>
+                            </div>
+                        </li>
+                        <li class="track-item" data-audio="Святослав Свидригайлов   вдвоём один.mp3" data-yt="https://www.youtube.com/watch?v=B65XJoNrjtk">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Вдвоем один <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=B65XJoNrjtk" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="#" class="sp-missing"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">1:43</span>
+                            </div>
+                        </li>
+                        <li class="track-item is-safe" data-audio="Святослав Свидригайлов - fever.mp3" data-yt="https://www.youtube.com/watch?v=m0i_oLYMdkQ">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Fever <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=m0i_oLYMdkQ" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="#" class="sp-missing"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">1:32</span>
+                            </div>
+                        </li>
+                        <li class="track-item" data-audio="Сатана Печёт Блины - Дорогая, наш сын продаёт кокаин.mp3" data-yt="https://www.youtube.com/watch?v=uU3dtVZi0HI">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Дорогая, наш сын продаёт кокаин <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=uU3dtVZi0HI" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/4Gh17rxQ6AdRYDETKioxia" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:18</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ROW 2 -->
+            <div class="album-card">
+                <div class="album-cover"><img src="c3.png" alt="Мент-людоед"></div>
+                <div class="album-info">
+                    <div class="album-title">Мент-людоед // 2013</div>
+                    <ul class="track-list">
+                        <li class="track-item extended-track" data-audio="СПБ - Жизнь это боль.mp3" data-yt="https://www.youtube.com/watch?v=B6VdlX2I954">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Жизнь это боль</span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=B6VdlX2I954" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/5DOJpsrh3KqpjC05hBo7vH" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">1:45</span>
+                            </div>
+                        </li>
+                        <li class="track-item" data-audio="СПБ - Роисся.mp3" data-yt="https://www.youtube.com/watch?v=QgbzlpG4LQA">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Роисся <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=QgbzlpG4LQA" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/27ZgA6wt9rsUwxlP7gcOKs" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:58</span>
+                            </div>
+                        </li>
+                        <li class="track-item is-safe" data-audio="СПБ - Два по сто.mp3" data-yt="https://www.youtube.com/watch?v=DbglIwjI-9I">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Два по сто <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=DbglIwjI-9I" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/37jiRBLwKMco8foOboSH2D" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:16</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="album-card">
+                <div class="album-cover"><img src="c4.png" alt="Медвежонок"></div>
+                <div class="album-info">
+                    <div class="album-title">Медвежонок // 2011</div>
+                    <ul class="track-list">
+                        <li class="track-item" data-audio="Сатана Печёт Блины - О, Этот Прекрасный Мир!.mp3" data-yt="https://www.youtube.com/watch?v=ZBcVpLsiNds">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">О, Этот Прекрасный Мир! <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=ZBcVpLsiNds" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="#" class="sp-missing"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:28</span>
+                            </div>
+                        </li>
+                        <li class="track-item" data-audio="Сатана Печёт Блины - Ты умрёшь.mp3" data-yt="https://www.youtube.com/watch?v=z-WnUEhLgPw">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Ты умрёшь <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=z-WnUEhLgPw" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="#" class="sp-missing"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">1:55</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ROW 3 -->
+            <div class="album-card">
+                <div class="album-cover"><img src="c5.png" alt="Встреча"></div>
+                <div class="album-info">
+                    <div class="album-title">Встреча // 2012</div>
+                    <ul class="track-list">
+                        <li class="track-item is-safe" data-audio="СПБ - Встреча.mp3" data-yt="https://www.youtube.com/watch?v=FCf-lFvgP0k">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Встреча <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=FCf-lFvgP0k" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/4ewfZWvh6xrXhJzhfRB8dV" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:39</span>
+                            </div>
+                        </li>
+                        <li class="track-item" data-audio="СПБ - Непредсказуемая.mp3" data-yt="https://www.youtube.com/watch?v=5ffxATsAlYc">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Непредсказуемая <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=5ffxATsAlYc" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/6qFACLXjPVOF9c1Fc9YDyZ" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:37</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="album-card">
+                <div class="album-cover"><img src="c6.png" alt="Антоново сердце"></div>
+                <div class="album-info">
+                    <div class="album-title">Антоново сердце // 2014</div>
+                    <ul class="track-list">
+                        <li class="track-item" data-audio="СПБ - Асоциальный ублюдок.mp3" data-yt="https://www.youtube.com/watch?v=ubKpstMvslA">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Асоциальный ублюдок <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=ubKpstMvslA" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/6ksvdV9X82Vgs5Yby6M1OV" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:24</span>
+                            </div>
+                        </li>
+                        <li class="track-item is-safe" data-audio="СПБ - Антоново сердце.mp3" data-yt="https://www.youtube.com/watch?v=wm2iPP-05do">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Антоново сердце <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=wm2iPP-05do" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/3KJrtKxg02PHQkJSRk0Z29" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:32</span>
+                            </div>
+                        </li>
+                        <li class="track-item is-safe" data-audio="СПБ - Бей меня по печени.mp3" data-yt="https://www.youtube.com/watch?v=3A19HsILG9g">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Бей меня по печени <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=3A19HsILG9g" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/0KMOWGM5qQ5g9nPhGspNqj" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">1:12</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- --- EXTENDED ONLY ALBUMS --- -->
+
+            <!-- Нормально (Синий кот) -->
+            <div class="album-card extended-album">
+                <div class="album-cover"><img src="c7.png" alt="Нормально"></div>
+                <div class="album-info">
+                    <div class="album-title">Нормально // 2012</div>
+                    <ul class="track-list">
+                        <li class="track-item" data-audio="Сатана Печёт Блины - Простит Утка.mp3" data-yt="https://www.youtube.com/watch?v=y6vy1pD_H7c">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Простит Утка</span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=y6vy1pD_H7c" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/46SePRDlgkokpJZQWcymXs" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">1:06</span>
+                            </div>
+                        </li>
+                        <li class="track-item" data-audio="Сатана Печёт Блины - Forever Alone.mp3" data-yt="https://www.youtube.com/watch?v=LN8WeeXPLYE">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Forever Alone</span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=LN8WeeXPLYE" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/0DdOeaDT1IhprK7jmR2lMZ" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:11</span>
+                            </div>
+                        </li>
+                        <li class="track-item" data-audio="Сатана Печёт Блины - Блюз для жён, которых бьют мужья.mp3" data-yt="https://www.youtube.com/watch?v=RHc4jyoWln0">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Блюз для жён, которых бьют мужья</span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=RHc4jyoWln0" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/3pe40Rgb9xrhhq2IPXxSWc" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:07</span>
+                            </div>
+                        </li>
+                        <li class="track-item" data-audio="Сатана Печёт Блины - Нормально.mp3" data-yt="https://www.youtube.com/watch?v=N0hcs5jCt6g">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Нормально</span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=N0hcs5jCt6g" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="#" class="sp-missing"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:44</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Титикака (Животные) -->
+            <div class="album-card extended-album">
+                <div class="album-cover"><img src="c8.png" alt="Титикака"></div>
+                <div class="album-info">
+                    <div class="album-title">Титикака // 2011</div>
+                    <ul class="track-list">
+                        <li class="track-item" data-audio="СПБ -  Мимо нот.mp3" data-yt="https://www.youtube.com/watch?v=dqXN_U-_hN0">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Мимо нот</span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=dqXN_U-_hN0" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/4CxXXkAH8OKAw6L6drM0T0" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:13</span>
+                            </div>
+                        </li>
+                        <li class="track-item" data-audio="СПБ -  Нас не найдёт твой сутенёр.mp3" data-yt="https://www.youtube.com/watch?v=AD7XHxyj1lM">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Нас не найдёт твой сутенёр</span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=AD7XHxyj1lM" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/2AfG4u63aOhd0PCkVL53xd" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">1:21</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Каверы -->
+            <div class="album-card extended-album">
+                <div class="album-cover"><img src="c9.png" alt="Каверы"></div>
+                <div class="album-info">
+                    <div class="album-title">Каверы</div>
+                    <ul class="track-list">
+                        <li class="track-item" data-audio="Святослав Свидригайлов   хитиновый покров (oxxxymiron cover).mp3" data-yt="https://www.youtube.com/watch?v=YQR222mmEvM">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Хитиновый покров (oxxxymiron cover)</span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=YQR222mmEvM" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="#" class="sp-missing"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:34</span>
+                            </div>
+                        </li>
+                        <li class="track-item" data-audio="Святослав Свидригайлов   морячок (арбенина cover).mp3" data-yt="https://www.youtube.com/watch?v=7xS4VAJ_9FU">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Морячок (арбенина cover)</span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=7xS4VAJ_9FU" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="#" class="sp-missing"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:42</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Песни про мужика -->
+            <div class="album-card extended-album">
+                <div class="album-cover"><img src="c10.png" alt="Песни про мужика"></div>
+                <div class="album-info">
+                    <div class="album-title">Песни про мужика // 2010</div>
+                    <ul class="track-list">
+                        <li class="track-item" data-audio="СПБ - Обычный мужик.mp3" data-yt="https://www.youtube.com/watch?v=BJ5cLn9zOe8">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Обычный мужик</span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=BJ5cLn9zOe8" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="#" class="sp-missing"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:22</span>
+                            </div>
+                        </li>
+                        <li class="track-item" data-audio="СПБ - Мёртвый мужик.mp3" data-yt="https://www.youtube.com/watch?v=l0v8kYP6MlY">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Мертвый мужик</span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=l0v8kYP6MlY" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="#" class="sp-missing"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">1:21</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- MAIN ALBUM (Весело жить // Мальчик) -->
+            <div class="album-card main-album">
+                <div class="album-cover"><img src="c11.png" alt="Весело жить"></div>
+                <div class="album-info">
+                    <div class="album-title">Весело жить // 2017</div>
+                    <ul class="track-list">
+                        <li class="track-item is-safe" data-audio="СПБ - Утро.mp3" data-yt="https://www.youtube.com/watch?v=inHBimJx3PQ">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Утро <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=inHBimJx3PQ" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/3QKrlDr9SteTGrveKoHbx4" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">6:18</span>
+                            </div>
+                        </li>
+                        <li class="track-item is-safe" data-audio="СПБ - Бананка.mp3" data-yt="https://www.youtube.com/watch?v=9ApeafbgZhY">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Бананка <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=9ApeafbgZhY" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/5dVCWpdKWwbLqQqXd778Ly" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:35</span>
+                            </div>
+                        </li>
+                        <li class="track-item" data-audio="СПБ - No pasaran.mp3" data-yt="https://www.youtube.com/watch?v=E6DH5Fn0-A8">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">No pasaran <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=E6DH5Fn0-A8" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/4RXt2fHwjjN7lwyKGzSFMq" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:43</span>
+                            </div>
+                        </li>
+                        <li class="track-item is-safe" data-audio="СПБ - Весело жить.mp3" data-yt="https://www.youtube.com/watch?v=6bB00qWi4to">
+                            <div class="track-left">
+                                <span class="track-num"></span><span class="play-btn">▶</span>
+                                <span class="track-name">Весело жить <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                            </div>
+                            <div class="track-right">
+                                <span class="track-links">
+                                    <a href="https://www.youtube.com/watch?v=6bB00qWi4to" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                    <a href="https://open.spotify.com/track/6lyzvMPtZqTYFSHb48dQ1K" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                                </span>
+                                <span class="track-time">2:56</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- POETRY & VIDEO SECTION -->
+    <section class="poetry-section">
+        <div class="poetry-content">
+            <div class="section-header">
+                <h2 class="section-title">Вірші</h2>
+                <span class="section-subtitle">Poetry</span>
+            </div>
+            <div class="video-grid">
+                <div class="video-column">
+                    <div class="video-wrapper">
+                        <a href="https://www.youtube.com/watch?v=G10-G5jnCec" target="_blank" rel="noopener noreferrer" class="fake-player">
+                            <img src="https://img.youtube.com/vi/G10-G5jnCec/hqdefault.jpg" alt="С бледной брюнеткой без имени">
+                            <div class="play-overlay">▶</div>
+                        </a>
+                    </div>
+                    <div class="poem-block">
+                        <div class="poem-text">«Мы ехали с этой бледной брюнеткой без имени домой, пары пару дней подождут. Она бредила, нашептывала: "прости меня, я загрустила" — до станции Plac Wilsona оставалось десять минут…»</div>
+                    </div>
+                </div>
+                <div class="video-column">
+                    <div class="video-wrapper">
+                        <a href="https://www.youtube.com/watch?v=3XXaFXCrHtQ" target="_blank" rel="noopener noreferrer" class="fake-player">
+                            <img src="https://img.youtube.com/vi/3XXaFXCrHtQ/hqdefault.jpg" alt="Сырный суп">
+                            <div class="play-overlay">▶</div>
+                        </a>
+                    </div>
+                    <div class="poem-block">
+                        <div class="poem-text">«Ты знаешь — не спорят о вкусах. Мне густо, тебе же — напротив, допустим. Допустим, касаемо сытности сырного супа. На темы подобные копья ломать, согласись, — это глупо. Но всё же…»</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- LORE SECTION -->
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Контекст</h2>
+            <span class="section-subtitle">Backstory</span>
+        </div>
+        <div class="lore-section">
+            <div class="lore-block">
+                <h3>Колаборації</h3>
+                <h4 class="lore-title">Фіти з Монеточкою</h4>
+                <ul class="track-list" style="margin-top: 20px;">
+                    <li class="track-item is-safe" data-audio="СПБ - Селфи (ft. Монеточка).mp3" data-yt="https://www.youtube.com/watch?v=tgxF6kvN408" data-cover="c11.png">
+                        <div class="track-left">
+                            <span class="track-num"></span><span class="play-btn">▶</span>
+                            <span class="track-name">Селфи <img src="3.png" class="dostoevsky-icon" alt="!"></span>
+                        </div>
+                        <div class="track-right">
+                            <span class="track-links">
+                                <a href="https://www.youtube.com/watch?v=tgxF6kvN408" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                <a href="#" class="sp-missing"><img src="6.png" alt="SP"></a>
+                            </span>
+                            <span class="track-time">3:52</span>
+                        </div>
+                    </li>
+                    <li class="track-item" data-audio="Сатана Печет Блины - About Us (Монеточка feat).mp3" data-yt="https://www.youtube.com/watch?v=tsvcDItrZbc" data-cover="c12.png">
+                        <div class="track-left">
+                            <span class="track-num"></span><span class="play-btn">▶</span>
+                            <span class="track-name">About Us</span>
+                        </div>
+                        <div class="track-right">
+                            <span class="track-links">
+                                <a href="https://www.youtube.com/watch?v=tsvcDItrZbc" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                <a href="#" class="sp-missing"><img src="6.png" alt="SP"></a>
+                            </span>
+                            <span class="track-time">2:12</span>
+                        </div>
+                    </li>
+                    <li class="track-item" data-audio="Монеточка - НТВ (на стихи Святослава Свидригайлова), Санкт-Петербург 26.10.2018 Аврора.mp3" data-yt="https://www.youtube.com/watch?v=7RaKh8DVWY4" data-cover="c12.png">
+                        <div class="track-left">
+                            <span class="track-num"></span><span class="play-btn">▶</span>
+                            <span class="track-name">НТВ</span>
+                        </div>
+                        <div class="track-right">
+                            <span class="track-links">
+                                <a href="https://www.youtube.com/watch?v=7RaKh8DVWY4" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                <a href="#" class="sp-missing"><img src="6.png" alt="SP"></a>
+                            </span>
+                            <span class="track-time">2:10</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="lore-block">
+                <h3>Конфлікти</h3>
+                <h4 class="lore-title">Альона Швець і «Соперница»</h4>
+                <div class="lore-text">В бородаті часи, коли були популярні поетичні, музичні спільноти в ВК, набираюча популярність дівчинка Альона познайомилась з широко відомим у вузьких колах анонімним інтернет-поетом та виконавцем Святославом. Він з нею фліртував, залицявся, закохував її. Як, насправді, і десятки інших дівчат з цієї тусовки.<br><br>Прикол в тому, що цьому #маніпулятору #залицяльнику було вже за 30, а дівчаткам дай бог по 16...<br><br>Власне, нижче я підібрав дві пісеньки. «Голосовые сообщения» — присвячена нашому герою, коли Швец ще була в нього закохана і піддавалась впливу. А друга — дісс, який вона записала з іншою дівчинкою, що попалась в ці педофільські сіті.</div>
+
+                <ul class="track-list" style="margin-top: 20px; border-top: 1px solid #222; margin-bottom: 30px;">
+                    <li class="track-item" data-audio="алёна швец. – голосовые сообщения (Official audio).mp3" data-yt="https://www.youtube.com/watch?v=MzO09MrKdT4" data-cover="c13.png">
+                        <div class="track-left">
+                            <span class="track-num"></span><span class="play-btn">▶</span>
+                            <span class="track-name">голосовые сообщения</span>
+                        </div>
+                        <div class="track-right">
+                            <span class="track-links">
+                                <a href="https://www.youtube.com/watch?v=MzO09MrKdT4" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                <a href="https://open.spotify.com/track/6hzdlPYaiXo2WBwH4CR8Rx" target="_blank" rel="noopener noreferrer"><img src="6.png" alt="SP"></a>
+                            </span>
+                            <span class="track-time">2:08</span>
+                        </div>
+                    </li>
+                    <li class="track-item" data-audio="алёна швецрыжая бестия  - Свидригайлов, как пахнет твоё запястье.mp3" data-yt="https://www.youtube.com/watch?v=yWnGdQY-GnU" data-cover="c14.png">
+                        <div class="track-left">
+                            <span class="track-num"></span><span class="play-btn">▶</span>
+                            <span class="track-name">Свидригайлов, как пахнет твоё запястье</span>
+                        </div>
+                        <div class="track-right">
+                            <span class="track-links">
+                                <a href="https://www.youtube.com/watch?v=yWnGdQY-GnU" target="_blank" rel="noopener noreferrer"><img src="5.png" alt="YT"></a>
+                                <a href="#" class="sp-missing"><img src="6.png" alt="SP"></a>
+                            </span>
+                            <span class="track-time">1:34</span>
+                        </div>
+                    </li>
+                </ul>
+
+                <div class="video-wrapper">
+                    <a href="https://www.youtube.com/watch?v=XXzEvZOQzHg" target="_blank" rel="noopener noreferrer" class="fake-player">
+                        <img src="https://img.youtube.com/vi/XXzEvZOQzHg/hqdefault.jpg" alt="Альона Швець">
+                        <div class="play-overlay">▶</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEEDBACK SECTION -->
+    <section class="feedback-section">
+        <div class="feedback-container">
+            <div class="feedback-img-wrapper">
+                <!-- ПЕРСОНАЛЬНЫЙ ТЕКСТ: пасхалка под демоном -->
+                <div class="feedback-hidden-message">
+                    А ось це можна було не ламати.<br>Красиво ж було...<br>Але +5 good girl points за допитливість
+                </div>
+                <img src="4.png" alt="Сны и воспоминания" class="feedback-img" id="feedbackDemonImg">
+            </div>
+            <div class="feedback-content">
+                <h3 class="feedback-title">Куточок споживача</h3>
+
+                <form id="realFeedbackForm" class="brutalist-form" action="https://formsubmit.co/denbeach124@gmail.com" method="POST">
+                    <input type="hidden" name="_captcha" value="false">
+                    <input type="text" name="_honey" style="display:none">
+                    <textarea name="message" class="brutalist-textarea" placeholder="Напиши що-небудь..." required></textarea>
+                    <button type="submit" class="brutalist-btn">На свій страх і ризик</button>
+                    <div id="formError" style="display:none; font-family:var(--font-mono); font-size:0.8rem; color:var(--accent-red);"></div>
+                </form>
+
+                <!-- ПЕРСОНАЛЬНЫЙ ТЕКСТ: ответ после отправки формы -->
+                <div id="success-banner" class="success-banner">
+                    Досить бавитись, просто напиши мені в лс, Іннулік
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div>// By_Danya_for_Innulik //</div>
+    </footer>
+
+    <!-- STICKY BOTTOM AUDIO PLAYER -->
+    <div id="playerBar" class="player-bar" aria-label="Аудіоплеєр">
+        <div class="player-inner">
+            <div class="player-track-info">
+                <img id="playerCover" class="player-cover" src="2.png" alt="Обкладинка">
+                <div class="player-meta">
+                    <div id="playerTitle" class="player-title">—</div>
+                    <div id="playerAlbum" class="player-album">—</div>
+                    <div id="playerStatus" class="player-status"></div>
+                </div>
+            </div>
+
+            <div class="player-center">
+                <div class="player-controls">
+                    <button id="prevBtn" class="player-ctrl-btn" type="button" title="Попередній трек">⏮</button>
+                    <button id="mainPlayBtn" class="player-ctrl-btn player-play-btn" type="button" title="Відтворити / Пауза">▶</button>
+                    <button id="nextBtn" class="player-ctrl-btn" type="button" title="Наступний трек">⏭</button>
+                </div>
+                <div class="player-progress-row">
+                    <span id="currentTime" class="player-time">0:00</span>
+                    <div id="progressContainer" class="player-progress-bar">
+                        <div id="progressBar" class="player-progress-fill"></div>
+                    </div>
+                    <span id="totalTime" class="player-time">0:00</span>
+                </div>
+            </div>
+
+            <div class="player-right">
+                <input id="volumeSlider" class="player-volume" type="range" min="0" max="1" step="0.02" value="0.85" aria-label="Гучність">
+                <a id="playerYtLink" class="player-yt-btn" href="#" target="_blank" rel="noopener noreferrer" title="Відкрити на YouTube">YT ↗</a>
+                <a id="playerSpLink" class="player-sp-btn is-hidden" href="#" target="_blank" rel="noopener noreferrer" title="Відкрити у Spotify">SP ↗</a>
+                <button id="closePlayerBtn" class="player-close-btn" type="button" title="Закрити плеєр">&times;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEAD CONFETTI & THANK YOU OVERLAY -->
+    <canvas id="confettiCanvas" class="confetti-canvas" aria-hidden="true"></canvas>
+    <div id="thankYouOverlay" class="thank-you-overlay" aria-hidden="true">
+        <div class="thank-you-text">Дякую за відгук!</div>
+    </div>
+
+    <script>
+        // --- MODES LOGIC ---
+        const instructionBtn = document.getElementById('instructionBtn');
+        const instructionModal = document.getElementById('instructionModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modeBtns = document.querySelectorAll('.mode-btn');
+
+        instructionBtn.addEventListener('click', () => { instructionModal.classList.add('active'); });
+        closeModalBtn.addEventListener('click', () => { instructionModal.classList.remove('active'); });
+        instructionModal.addEventListener('click', (e) => {
+            if (e.target === instructionModal) instructionModal.classList.remove('active');
+        });
+
+        modeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.body.classList.remove('mode-safe', 'mode-extended');
+
+                const mode = btn.dataset.mode;
+                if (mode === 'safe') document.body.classList.add('mode-safe');
+                if (mode === 'extended') document.body.classList.add('mode-extended');
+
+                instructionModal.classList.remove('active');
+            });
+        });
+
+        // --- MISSING SPOTIFY LOGIC ---
+        document.querySelectorAll('.sp-missing').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const trackItem = this.closest('.track-item');
+                const trackNameEl = trackItem.querySelector('.track-name');
+
+                if (trackNameEl.dataset.isAnimating === 'true') return;
+
+                const originalHTML = trackNameEl.innerHTML;
+                trackNameEl.dataset.isAnimating = 'true';
+
+                trackNameEl.style.opacity = '0';
+                setTimeout(() => {
+                    trackNameEl.innerHTML = '<span style="color: #666; font-size: 0.85rem; font-style: italic;">У спотіку немає, який сором</span>';
+                    trackNameEl.style.opacity = '1';
+
+                    setTimeout(() => {
+                        trackNameEl.style.opacity = '0';
+                        setTimeout(() => {
+                            trackNameEl.innerHTML = originalHTML;
+                            trackNameEl.style.opacity = '1';
+                            trackNameEl.dataset.isAnimating = 'false';
+                        }, 200);
+                    }, 2000);
+                }, 200);
+            });
+        });
+
+        // --- INTERNAL AUDIO PLAYER LOGIC ---
+        const allTrackItems = Array.from(document.querySelectorAll('.track-item'));
+        const playerBar = document.getElementById('playerBar');
+        const playerCover = document.getElementById('playerCover');
+        const playerTitle = document.getElementById('playerTitle');
+        const playerAlbum = document.getElementById('playerAlbum');
+        const playerStatus = document.getElementById('playerStatus');
+        const prevBtn = document.getElementById('prevBtn');
+        const mainPlayBtn = document.getElementById('mainPlayBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const currentTimeEl = document.getElementById('currentTime');
+        const totalTimeEl = document.getElementById('totalTime');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const playerYtLink = document.getElementById('playerYtLink');
+        const playerSpLink = document.getElementById('playerSpLink');
+        const closePlayerBtn = document.getElementById('closePlayerBtn');
+
+        let currentAudio = null;
+        let currentItem = null;
+        let currentLoadToken = 0;
+
+        function formatTime(sec) {
+            if (!isFinite(sec) || sec < 0) return '0:00';
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return m + ':' + (s < 10 ? '0' : '') + s;
+        }
+
+        function getTrackTitle(item) {
+            const nameEl = item.querySelector('.track-name');
+            if (!nameEl) return '';
+            let rawName = '';
+            nameEl.childNodes.forEach(node => {
+                if (node.nodeType === 3) rawName += node.textContent;
+            });
+            return rawName.trim();
+        }
+
+        function getTrackMeta(item) {
+            const customCover = item.dataset.cover;
+            const albumCard = item.closest('.album-card');
+            if (albumCard) {
+                const img = albumCard.querySelector('.album-cover img');
+                const title = albumCard.querySelector('.album-title');
+                return {
+                    cover: customCover || (img ? img.getAttribute('src') : '2.png'),
+                    album: title ? title.textContent.trim() : 'Архів'
+                };
+            }
+            const loreBlock = item.closest('.lore-block');
+            if (loreBlock) {
+                const loreTitle = loreBlock.querySelector('.lore-title');
+                return {
+                    cover: customCover || '2.png',
+                    album: loreTitle ? loreTitle.textContent.trim() : 'Контекст'
+                };
+            }
+            return { cover: customCover || '2.png', album: 'Архів' };
+        }
+
+        function getPlayableTracks() {
+            const isExtended = document.body.classList.contains('mode-extended');
+            const isSafe = document.body.classList.contains('mode-safe');
+
+            const visible = allTrackItems.filter(item => {
+                if (isExtended) return true;
+                return !item.classList.contains('extended-track') && !item.closest('.extended-album');
+            });
+
+            if (isSafe && (!currentItem || currentItem.classList.contains('is-safe'))) {
+                const safeOnly = visible.filter(item => item.classList.contains('is-safe'));
+                if (safeOnly.length > 0) return safeOnly;
+            }
+            return visible;
+        }
+
+        function setPlayButtonsState(isPlaying) {
+            allTrackItems.forEach(item => {
+                const btn = item.querySelector('.play-btn');
+                if (!btn) return;
+                btn.textContent = (item === currentItem && isPlaying) ? '⏸' : '▶';
+            });
+            mainPlayBtn.textContent = isPlaying ? '⏸' : '▶';
+        }
+
+        function clearStatus() {
+            playerStatus.textContent = '';
+            playerStatus.classList.remove('visible');
+            playerYtLink.classList.remove('pulse');
+        }
+
+        function showMissingAudioStatus(audioSrc) {
+            playerStatus.textContent = `Локальний файл «${audioSrc}» не знайдено у папці — натисни YT ↗, щоб відкрити трек на YouTube`;
+            playerStatus.classList.add('visible');
+            playerYtLink.classList.add('pulse');
+            setPlayButtonsState(false);
+        }
+
+        function playTrack(item) {
+            if (!item) return;
+            const audioSrc = item.dataset.audio || (getTrackTitle(item) + '.mp3');
+            const ytUrl = item.dataset.yt || '#';
+            const titleText = getTrackTitle(item);
+            const fallbackTime = item.querySelector('.track-time')?.textContent.trim() || '0:00';
+            const meta = getTrackMeta(item);
+
+            if (currentAudio && currentItem === item && !currentAudio.error) {
+                if (currentAudio.paused) {
+                    currentAudio.play().then(() => {
+                        clearStatus();
+                        setPlayButtonsState(true);
+                    }).catch(err => {
+                        if (err.name !== 'AbortError') showMissingAudioStatus(audioSrc);
+                    });
+                } else {
+                    currentAudio.pause();
+                    setPlayButtonsState(false);
+                }
+                return;
+            }
+
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.src = '';
+            }
+
+            if (currentItem) currentItem.classList.remove('is-playing');
+            currentItem = item;
+            currentItem.classList.add('is-playing');
+            currentLoadToken++;
+            const token = currentLoadToken;
+
+            document.body.classList.add('player-open');
+            playerCover.src = meta.cover;
+            playerTitle.textContent = titleText || audioSrc;
+            playerAlbum.textContent = meta.album;
+            playerYtLink.href = ytUrl;
+            const spLinkEl = item.querySelector('.track-links a[href*="open.spotify.com"]:not(.sp-missing)');
+            if (spLinkEl) {
+                playerSpLink.href = spLinkEl.getAttribute('href');
+                playerSpLink.classList.remove('is-hidden');
+            } else {
+                playerSpLink.href = '#';
+                playerSpLink.classList.add('is-hidden');
+            }
+            currentTimeEl.textContent = '0:00';
+            totalTimeEl.textContent = fallbackTime;
+            progressBar.style.width = '0%';
+            clearStatus();
+
+            const audio = new Audio(encodeURI(audioSrc));
+            audio.volume = parseFloat(volumeSlider.value);
+            currentAudio = audio;
+
+            audio.addEventListener('loadedmetadata', () => {
+                if (token !== currentLoadToken) return;
+                if (isFinite(audio.duration)) {
+                    totalTimeEl.textContent = formatTime(audio.duration);
+                }
+            });
+
+            audio.addEventListener('timeupdate', () => {
+                if (token !== currentLoadToken || !isFinite(audio.duration) || audio.duration <= 0) return;
+                currentTimeEl.textContent = formatTime(audio.currentTime);
+                progressBar.style.width = ((audio.currentTime / audio.duration) * 100).toFixed(2) + '%';
+            });
+
+            audio.addEventListener('error', () => {
+                if (token !== currentLoadToken) return;
+                showMissingAudioStatus(audioSrc);
+            });
+
+            audio.addEventListener('ended', () => {
+                if (token !== currentLoadToken) return;
+                playAdjacentTrack(1);
+            });
+
+            setPlayButtonsState(true);
+            audio.play().catch(err => {
+                if (token !== currentLoadToken) return;
+                if (err.name !== 'AbortError') showMissingAudioStatus(audioSrc);
+            });
+        }
+
+        function playAdjacentTrack(step) {
+            const list = getPlayableTracks();
+            if (list.length === 0) return;
+            const idx = currentItem ? list.indexOf(currentItem) : -1;
+            const nextIdx = idx === -1 ? 0 : (idx + step + list.length) % list.length;
+            playTrack(list[nextIdx]);
+        }
+
+        allTrackItems.forEach(item => {
+            const playTrigger = item.querySelector('.track-name');
+            const playBtn = item.querySelector('.play-btn');
+
+            const onTrackClick = () => {
+                if (playTrigger && playTrigger.dataset.isAnimating === 'true') return;
+                playTrack(item);
+            };
+
+            if (playBtn) playBtn.addEventListener('click', onTrackClick);
+            if (playTrigger) playTrigger.addEventListener('click', onTrackClick);
+        });
+
+        mainPlayBtn.addEventListener('click', () => {
+            if (currentItem) {
+                playTrack(currentItem);
+            } else {
+                const list = getPlayableTracks();
+                if (list.length > 0) playTrack(list[0]);
+            }
+        });
+
+        prevBtn.addEventListener('click', () => playAdjacentTrack(-1));
+        nextBtn.addEventListener('click', () => playAdjacentTrack(1));
+
+        progressContainer.addEventListener('click', (e) => {
+            if (!currentAudio || !isFinite(currentAudio.duration) || currentAudio.duration <= 0) return;
+            const rect = progressContainer.getBoundingClientRect();
+            const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+            currentAudio.currentTime = ratio * currentAudio.duration;
+        });
+
+        volumeSlider.addEventListener('input', () => {
+            if (currentAudio) currentAudio.volume = parseFloat(volumeSlider.value);
+        });
+
+        closePlayerBtn.addEventListener('click', () => {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.src = '';
+                currentAudio = null;
+            }
+            if (currentItem) {
+                currentItem.classList.remove('is-playing');
+                currentItem = null;
+            }
+            setPlayButtonsState(false);
+            clearStatus();
+            playerSpLink.href = '#';
+            playerSpLink.classList.add('is-hidden');
+            document.body.classList.remove('player-open');
+        });
+
+        // --- TELEGRAM NOTIFICATIONS ---
+        const TG_BOT_TOKEN = '9081929606:AAFTDKzR1GS3wWuydwrs_iFTlmJsm2Xjxp8';
+        const TG_CHAT_ID = '496101883';
+
+        function sendTelegramNotification(text) {
+            return fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: TG_CHAT_ID,
+                    text: text
+                })
+            }).then(res => res.ok).catch(() => false);
+        }
+
+        // --- ANIMATIONS ---
+        const catImg = document.getElementById('catImage');
+        const hiddenMessage = document.querySelector('.hidden-message');
+        let clickCount = 0;
+
+        catImg.addEventListener('click', () => {
+            clickCount++;
+            if (clickCount === 1) {
+                catImg.classList.add('shaking');
+            } else if (clickCount === 2) {
+                catImg.classList.remove('shaking');
+                catImg.classList.add('falling');
+                setTimeout(() => { hiddenMessage.classList.add('revealed'); }, 500);
+                sendTelegramNotification('🐱 Іннулік знайшла пасхалку з котиком!');
+            }
+        });
+
+        const demonImg = document.getElementById('feedbackDemonImg');
+        const demonHiddenMessage = document.querySelector('.feedback-hidden-message');
+        let demonRevealed = false;
+
+        demonImg.addEventListener('click', () => {
+            demonImg.classList.add('falling');
+            setTimeout(() => { demonHiddenMessage.classList.add('revealed'); }, 300);
+            if (!demonRevealed) {
+                demonRevealed = true;
+                sendTelegramNotification('👹 Іннулік збила демона (+5 good girl points)!');
+            }
+        });
+
+        // --- HEAD CONFETTI CELEBRATION ---
+        const confettiCanvas = document.getElementById('confettiCanvas');
+        const confettiCtx = confettiCanvas.getContext('2d');
+        const thankYouOverlay = document.getElementById('thankYouOverlay');
+
+        const HEAD_SOURCES = [
+            { src: encodeURI('лев/Новый 1проект.png'), sx: 426, sy: 331, sw: 187, sh: 236 },
+            { src: encodeURI('лев/Новый проект.png'), sx: 584, sy: 439, sw: 169, sh: 200 }
+        ];
+        const HEAD_COLORS = ['#ff4d8d', '#ffd166', '#06d6a0', '#4cc9f0', '#b5179e', '#ff595e', '#ff9f1c', '#80ed99'];
+
+        let headSprites = [];
+        let headSpritesPromise = null;
+
+        function buildHeadSprites() {
+            if (headSpritesPromise) return headSpritesPromise;
+            headSpritesPromise = Promise.all(HEAD_SOURCES.map(meta => new Promise(resolve => {
+                const img = new Image();
+                img.onload = () => resolve({ img, meta });
+                img.onerror = () => resolve(null);
+                img.src = meta.src;
+            }))).then(loaded => {
+                const sprites = [];
+                loaded.forEach(entry => {
+                    if (!entry) return;
+                    const { img, meta } = entry;
+                    const spriteH = 128;
+                    const spriteW = Math.round(spriteH * (meta.sw / meta.sh));
+
+                    HEAD_COLORS.forEach(color => {
+                        const off = document.createElement('canvas');
+                        off.width = spriteW;
+                        off.height = spriteH;
+                        const oCtx = off.getContext('2d');
+
+                        oCtx.drawImage(img, meta.sx, meta.sy, meta.sw, meta.sh, 0, 0, spriteW, spriteH);
+                        oCtx.globalCompositeOperation = 'color';
+                        oCtx.fillStyle = color;
+                        oCtx.fillRect(0, 0, spriteW, spriteH);
+
+                        oCtx.globalCompositeOperation = 'source-atop';
+                        oCtx.globalAlpha = 0.22;
+                        oCtx.fillStyle = color;
+                        oCtx.fillRect(0, 0, spriteW, spriteH);
+
+                        oCtx.globalAlpha = 1;
+                        oCtx.globalCompositeOperation = 'destination-in';
+                        oCtx.drawImage(img, meta.sx, meta.sy, meta.sw, meta.sh, 0, 0, spriteW, spriteH);
+
+                        sprites.push({ canvas: off, ratio: meta.sw / meta.sh });
+                    });
+                });
+                headSprites = sprites;
+                return sprites;
+            });
+            return headSpritesPromise;
+        }
+
+        // Предзагрузка спрайтов сразу после загрузки страницы
+        buildHeadSprites();
+
+        let confettiParticles = [];
+        let confettiAnimId = null;
+        let confettiSpawnEnd = 0;
+        let lastSpawnAt = 0;
+        let lastFrameAt = 0;
+        let thankYouHideTimer = null;
+
+        function resizeConfettiCanvas() {
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            confettiCanvas.width = Math.floor(window.innerWidth * dpr);
+            confettiCanvas.height = Math.floor(window.innerHeight * dpr);
+            confettiCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        window.addEventListener('resize', () => {
+            if (confettiAnimId) resizeConfettiCanvas();
+        });
+
+        function spawnHeadParticle(side, burst) {
+            if (!headSprites.length) return;
+            const sprite = headSprites[Math.floor(Math.random() * headSprites.length)];
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const isMobile = vw < 600;
+
+            const h = isMobile ? (28 + Math.random() * 20) : (34 + Math.random() * 30);
+            const w = h * sprite.ratio;
+
+            const fromLeft = side === 'left';
+            const x = fromLeft ? (-w * 0.4 + Math.random() * 28) : (vw + w * 0.4 - Math.random() * 28);
+            const y = burst
+                ? (vh * (0.45 + Math.random() * 0.48))
+                : (vh * (0.2 + Math.random() * 0.65));
+
+            const speedScale = Math.max(0.65, Math.min(1.25, vw / 1100));
+            const horizSpeed = (burst ? (520 + Math.random() * 520) : (340 + Math.random() * 440)) * speedScale;
+            const upSpeed = burst ? -(460 + Math.random() * 540) : -(300 + Math.random() * 460);
+
+            confettiParticles.push({
+                sprite: sprite.canvas,
+                x,
+                y,
+                w,
+                h,
+                vx: fromLeft ? horizSpeed : -horizSpeed,
+                vy: upSpeed,
+                gravity: 680 + Math.random() * 240,
+                drag: 0.991,
+                rotation: (Math.random() - 0.5) * 0.7,
+                vr: (Math.random() - 0.5) * 4.5,
+                wobblePhase: Math.random() * Math.PI * 2,
+                wobbleSpeed: 3 + Math.random() * 3.5,
+                alpha: 1
+            });
+        }
+
+        function spawnSidePair(countEach, burst) {
+            for (let i = 0; i < countEach; i++) {
+                if (confettiParticles.length >= 260) break;
+                spawnHeadParticle('left', burst);
+                spawnHeadParticle('right', burst);
+            }
+        }
+
+        function animateConfetti(now) {
+            if (!lastFrameAt) lastFrameAt = now;
+            const dt = Math.min((now - lastFrameAt) / 1000, 0.05);
+            lastFrameAt = now;
+
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const spawning = now < confettiSpawnEnd;
+
+            if (spawning && now - lastSpawnAt >= 75) {
+                const remaining = confettiSpawnEnd - now;
+                const batch = remaining < 1000 ? 1 : (vw < 600 ? 2 : 3);
+                spawnSidePair(batch, false);
+                lastSpawnAt = now;
+            }
+
+            confettiCtx.clearRect(0, 0, vw, vh);
+
+            for (let i = confettiParticles.length - 1; i >= 0; i--) {
+                const p = confettiParticles[i];
+                const dragFactor = Math.pow(p.drag, dt * 60);
+                p.vx *= dragFactor;
+                p.vy = p.vy * dragFactor + p.gravity * dt;
+                p.wobblePhase += p.wobbleSpeed * dt;
+                p.x += p.vx * dt + Math.sin(p.wobblePhase) * 28 * dt;
+                p.y += p.vy * dt;
+                p.rotation += p.vr * dt;
+
+                if (p.y - p.h > vh + 80) {
+                    confettiParticles.splice(i, 1);
+                    continue;
+                }
+
+                confettiCtx.save();
+                confettiCtx.translate(p.x, p.y);
+                confettiCtx.rotate(p.rotation);
+                confettiCtx.globalAlpha = p.alpha;
+                confettiCtx.drawImage(p.sprite, -p.w / 2, -p.h / 2, p.w, p.h);
+                confettiCtx.restore();
+            }
+
+            if (spawning || confettiParticles.length > 0) {
+                confettiAnimId = requestAnimationFrame(animateConfetti);
+            } else {
+                confettiCtx.clearRect(0, 0, vw, vh);
+                confettiAnimId = null;
+            }
+        }
+
+        function triggerHeadCelebration() {
+            clearTimeout(thankYouHideTimer);
+            thankYouOverlay.classList.add('visible');
+            thankYouHideTimer = setTimeout(() => {
+                thankYouOverlay.classList.remove('visible');
+            }, 4600);
+
+            buildHeadSprites().then(() => {
+                if (!headSprites.length) return;
+                resizeConfettiCanvas();
+                const now = performance.now();
+                confettiSpawnEnd = now + 5000;
+                lastSpawnAt = now;
+                lastFrameAt = now;
+                spawnSidePair(window.innerWidth < 600 ? 22 : 34, true);
+                if (!confettiAnimId) {
+                    confettiAnimId = requestAnimationFrame(animateConfetti);
+                }
+            });
+        }
+
+        // --- FORM SUBMIT ---
+        const form = document.getElementById('realFeedbackForm');
+        const successBanner = document.getElementById('success-banner');
+        const formError = document.getElementById('formError');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const rawAction = form.getAttribute('action') || '';
+            formError.style.display = 'none';
+            formError.textContent = '';
+
+            if (rawAction.includes('ТВОЙ_EMAIL@GMAIL.COM')) {
+                formError.textContent = 'Форма поки не налаштована: заміни ТВОЙ_EMAIL@GMAIL.COM в атрибуті action форми на свою справжню пошту.';
+                formError.style.display = 'block';
+                return;
+            }
+
+            const messageField = form.querySelector('textarea[name="message"]');
+            const messageText = messageField ? messageField.value.trim() : '';
+
+            triggerHeadCelebration();
+
+            const tgPromise = sendTelegramNotification(`💌 Новий відгук від Іннуліка:\n\n${messageText}`);
+
+            const ajaxAction = rawAction.includes('/ajax/')
+                ? rawAction
+                : rawAction.replace('formsubmit.co/', 'formsubmit.co/ajax/');
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'ВІДПРАВЛЕННЯ...';
+            submitBtn.style.opacity = '0.5';
+            submitBtn.disabled = true;
+
+            const emailPromise = fetch(ajaxAction, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: { 'Accept': 'application/json' }
+            }).then(res => res.ok).catch(() => false);
+
+            Promise.all([tgPromise, emailPromise]).then(([tgOk, emailOk]) => {
+                if (tgOk || emailOk) {
+                    form.style.display = 'none';
+                    successBanner.style.display = 'block';
+                } else {
+                    formError.textContent = 'Сталася мережева помилка під час відправлення.';
+                    formError.style.display = 'block';
+                    submitBtn.textContent = 'На свій страх і ризик';
+                    submitBtn.style.opacity = '1';
+                    submitBtn.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
