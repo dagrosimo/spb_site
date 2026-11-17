@@ -570,6 +570,11 @@
             .player-volume { display: none; }
             body.player-open .instruction-btn { bottom: calc(132px + env(safe-area-inset-bottom, 0px)); }
             body.player-open .footer { padding-bottom: 160px; }
+            .hero-main-img.in-view { transform: rotate(0deg); }
+            .album-cover.in-view img { filter: brightness(0.85) contrast(1.1); }
+            .fake-player.in-view img { filter: grayscale(0%) brightness(0.8) contrast(1.1); transform: scale(1.02); }
+            .fake-player.in-view .play-overlay { color: var(--accent-red); transform: translate(-50%, -50%) scale(1.1); }
+            .feedback-img.in-view { filter: grayscale(80%) brightness(0.6) contrast(1.3); }
         }
     </style>
 </head>
@@ -1977,6 +1982,20 @@
                 }
             });
         });
+
+        // --- MOBILE SCROLL HOVER EFFECT ---
+        if ('IntersectionObserver' in window) {
+            const scrollHoverTargets = document.querySelectorAll('.hero-main-img, .album-cover, .fake-player, .feedback-img');
+            const scrollHoverObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    entry.target.classList.toggle('in-view', entry.isIntersecting);
+                });
+            }, {
+                rootMargin: '-22% 0px -22% 0px',
+                threshold: 0.25
+            });
+            scrollHoverTargets.forEach(el => scrollHoverObserver.observe(el));
+        }
     </script>
 </body>
 </html>
