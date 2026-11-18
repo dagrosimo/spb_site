@@ -588,6 +588,29 @@
             0%, 100% { transform: translateY(0) rotate(-3deg); }
             50% { transform: translateY(-2px) rotate(3deg); }
         }
+        .tg-heart {
+            width: 19px;
+            height: 19px;
+            flex-shrink: 0;
+            filter: drop-shadow(0 0 7px rgba(255, 77, 141, 0.72));
+            animation: heartBeat 1.8s ease-in-out infinite;
+        }
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            18% { transform: scale(1.16); }
+            32% { transform: scale(0.98); }
+            46% { transform: scale(1.12); }
+            65% { transform: scale(1); }
+        }
+        .tg-popup.is-support {
+            border-top-color: #ff4d8d;
+        }
+        .tg-popup-sender.is-support {
+            color: #ff7597;
+        }
+        .is-hidden {
+            display: none !important;
+        }
         .tg-popup-close {
             background: transparent;
             border: none;
@@ -666,7 +689,7 @@
             transform-origin: left center;
         }
         .tg-popup-timer-fill.running {
-            animation: tgTimerShrink 10s linear forwards;
+            animation: tgTimerShrink 5s linear forwards;
         }
         @keyframes tgTimerShrink {
             from { transform: scaleX(1); }
@@ -1548,8 +1571,8 @@
     <!-- TELEGRAM LIVE MESSAGE POPUP -->
     <div id="tgPopup" class="tg-popup" role="dialog" aria-live="polite" aria-label="Повідомлення від Дані">
         <div class="tg-popup-header">
-            <span class="tg-popup-sender">
-                <svg class="tg-crown" viewBox="0 0 24 24" aria-hidden="true">
+            <span id="tgPopupSender" class="tg-popup-sender">
+                <svg id="tgCrownIcon" class="tg-crown" viewBox="0 0 24 24" aria-hidden="true">
                     <defs>
                         <linearGradient id="tgCrownGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stop-color="#fff0a8"></stop>
@@ -1563,7 +1586,18 @@
                     <circle cx="22" cy="6.4" r="1.1" fill="#ffe082"></circle>
                     <circle cx="12" cy="13.2" r="1.2" fill="#b02a2a"></circle>
                 </svg>
-                <span>ВІД ДАНІ</span>
+                <svg id="tgHeartIcon" class="tg-heart is-hidden" viewBox="0 0 24 24" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="tgHeartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#ff85b3"></stop>
+                            <stop offset="55%" stop-color="#ff4d8d"></stop>
+                            <stop offset="100%" stop-color="#b02a2a"></stop>
+                        </linearGradient>
+                    </defs>
+                    <path fill="url(#tgHeartGrad)" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+                </svg>
+                <span id="tgDotIcon" class="dot red is-hidden" style="margin-right: 0;"></span>
+                <span id="tgSenderName">ВІД ДАНІ</span>
             </span>
             <button id="tgPopupClose" class="tg-popup-close" type="button" title="Закрити">&times;</button>
         </div>
@@ -1877,25 +1911,203 @@
         // --- TELEGRAM NOTIFICATIONS ---
         const TG_BOT_TOKEN = '9081929606:AAFTDKzR1GS3wWuydwrs_iFTlmJsm2Xjxp8';
         const TG_CHAT_ID = '496101883';
+        const TG_REPLY_MARKUP = {
+            keyboard: [[{ text: '👑 Від Дані' }, { text: '❤️ Підтримка' }]],
+            resize_keyboard: true,
+            is_persistent: true
+        };
 
-        function sendTelegramNotification(text) {
+        function sendTelegramNotification(text, extraPayload) {
+            const bodyPayload = Object.assign({
+                chat_id: TG_CHAT_ID,
+                text: text,
+                reply_markup: TG_REPLY_MARKUP
+            }, extraPayload || {});
             return fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: TG_CHAT_ID,
-                    text: text
-                })
+                keepalive: true,
+                body: JSON.stringify(bodyPayload)
             }).then(res => res.ok).catch(() => false);
         }
 
-        // --- TELEGRAM LIVE INCOMING MESSAGES (ONE-TIME READ + 10s AUTO-HIDE) ---
+        // --- TELEGRAM LIVE INCOMING MESSAGES (ONE-TIME READ + 5s AUTO-HIDE + TEMPLATES) ---
         const tgPopup = document.getElementById('tgPopup');
+        const tgPopupSender = document.getElementById('tgPopupSender');
+        const tgCrownIcon = document.getElementById('tgCrownIcon');
+        const tgHeartIcon = document.getElementById('tgHeartIcon');
+        const tgDotIcon = document.getElementById('tgDotIcon');
+        const tgSenderName = document.getElementById('tgSenderName');
         const tgPopupClose = document.getElementById('tgPopupClose');
         const tgPopupMessages = document.getElementById('tgPopupMessages');
         const tgPopupTimerFill = document.getElementById('tgPopupTimerFill');
 
-        const TG_DISPLAY_MS = 10000;
+        const TG_DISPLAY_MS = 5000;
+        const TG_PROFILE_STORAGE_KEY = 'spb_tg_sender_profile_v1';
+        const TG_PRESETS = {
+            danya: { icon: 'crown', label: 'ВІД ДАНІ' },
+            support: { icon: 'heart', label: 'ПІДТРИМКА' }
+        };
+
+        function readSavedProfile() {
+            try {
+                const raw = localStorage.getItem(TG_PROFILE_STORAGE_KEY);
+                if (!raw) return Object.assign({}, TG_PRESETS.danya);
+                const parsed = JSON.parse(raw);
+                if (parsed && typeof parsed.label === 'string' && parsed.label.trim()) {
+                    const icon = (parsed.icon === 'heart' || parsed.icon === 'dot') ? parsed.icon : 'crown';
+                    return { icon, label: parsed.label.trim() };
+                }
+            } catch (_) {}
+            return Object.assign({}, TG_PRESETS.danya);
+        }
+
+        let tgSenderProfile = readSavedProfile();
+        let tgProfileUpdatedByCommand = false;
+
+        function applySenderProfileToDom(profile) {
+            const icon = profile.icon || 'crown';
+            const label = (profile.label || 'ВІД ДАНІ').trim();
+            const isHeart = icon === 'heart';
+
+            tgSenderName.textContent = label;
+            tgCrownIcon.classList.toggle('is-hidden', icon !== 'crown');
+            tgHeartIcon.classList.toggle('is-hidden', icon !== 'heart');
+            tgDotIcon.classList.toggle('is-hidden', icon !== 'dot');
+
+            tgPopup.classList.toggle('is-support', isHeart);
+            tgPopupSender.classList.toggle('is-support', isHeart);
+            tgPopup.setAttribute('aria-label', label);
+        }
+
+        function encodeProfileToShortDesc(profile) {
+            const marker = profile.icon === 'heart' ? '❤️' : (profile.icon === 'crown' ? '👑' : '✨');
+            return `Підпис: ${marker} ${profile.label}`.slice(0, 120);
+        }
+
+        function parseShortDescToProfile(desc) {
+            if (typeof desc !== 'string') return null;
+            if (desc.startsWith('Підпис: 👑 ')) {
+                const label = desc.slice('Підпис: 👑 '.length).trim();
+                return label ? { icon: 'crown', label } : null;
+            }
+            if (desc.startsWith('Підпис: ❤️ ')) {
+                const label = desc.slice('Підпис: ❤️ '.length).trim();
+                return label ? { icon: 'heart', label } : null;
+            }
+            if (desc.startsWith('Підпис: ✨ ')) {
+                const label = desc.slice('Підпис: ✨ '.length).trim();
+                return label ? { icon: 'dot', label } : null;
+            }
+            return null;
+        }
+
+        function setSenderProfile(nextProfile, syncRemote) {
+            tgSenderProfile = {
+                icon: nextProfile.icon || 'crown',
+                label: (nextProfile.label || 'ВІД ДАНІ').trim()
+            };
+            applySenderProfileToDom(tgSenderProfile);
+            try {
+                localStorage.setItem(TG_PROFILE_STORAGE_KEY, JSON.stringify(tgSenderProfile));
+            } catch (_) {}
+
+            if (syncRemote) {
+                fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/setMyShortDescription`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    keepalive: true,
+                    body: JSON.stringify({ short_description: encodeProfileToShortDesc(tgSenderProfile) })
+                }).catch(() => {});
+            }
+        }
+
+        applySenderProfileToDom(tgSenderProfile);
+
+        function syncProfileFromTelegram() {
+            const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            const timeoutId = controller ? setTimeout(() => controller.abort(), 1600) : null;
+            return fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/getMyShortDescription?_t=${Date.now()}`, {
+                cache: 'no-store',
+                signal: controller ? controller.signal : undefined
+            })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (tgProfileUpdatedByCommand) return;
+                if (data && data.ok && data.result && typeof data.result.short_description === 'string') {
+                    const parsed = parseShortDescToProfile(data.result.short_description);
+                    if (parsed) {
+                        setSenderProfile(parsed, false);
+                    }
+                }
+            })
+            .catch(() => {})
+            .finally(() => {
+                if (timeoutId) clearTimeout(timeoutId);
+            });
+        }
+
+        function parseSenderCommand(rawText) {
+            const trimmed = (rawText || '').trim();
+            if (!trimmed) return null;
+            const lower = trimmed.toLowerCase();
+
+            if (
+                trimmed === '👑 Від Дані' ||
+                lower === '/danya' ||
+                lower === '/1' ||
+                lower === 'від дані' ||
+                lower === 'от дани'
+            ) {
+                return { type: 'profile', profile: Object.assign({}, TG_PRESETS.danya) };
+            }
+
+            if (
+                trimmed === '❤️ Підтримка' ||
+                lower === '/support' ||
+                lower === '/2' ||
+                lower === 'підтримка' ||
+                lower === 'піддтримка' ||
+                lower === 'поддержка'
+            ) {
+                return { type: 'profile', profile: Object.assign({}, TG_PRESETS.support) };
+            }
+
+            const customMatch = trimmed.match(/^\/(?:name|имя)(?:@\w+)?\s+([\s\S]+)$/i);
+            if (customMatch) {
+                let rawName = customMatch[1].trim();
+                let icon = 'dot';
+                if (rawName.startsWith('👑')) {
+                    icon = 'crown';
+                    rawName = rawName.slice('👑'.length).trim();
+                } else if (rawName.startsWith('❤️')) {
+                    icon = 'heart';
+                    rawName = rawName.slice('❤️'.length).trim();
+                } else if (rawName.startsWith('❤')) {
+                    icon = 'heart';
+                    rawName = rawName.slice('❤'.length).trim();
+                } else if (rawName.startsWith('💖')) {
+                    icon = 'heart';
+                    rawName = rawName.slice('💖'.length).trim();
+                }
+                if (rawName) {
+                    return { type: 'profile', profile: { icon, label: rawName.slice(0, 40) } };
+                }
+            }
+
+            if (lower === '/menu' || lower === '/start' || lower === '/help') {
+                return { type: 'menu' };
+            }
+
+            return null;
+        }
+
+        function formatProfileBadge(profile) {
+            if (profile.icon === 'crown') return `👑 ${profile.label}`;
+            if (profile.icon === 'heart') return `❤️ ${profile.label}`;
+            return `✨ ${profile.label}`;
+        }
+
         let tgNextOffset = 0;
         let tgHighestHandledId = 0;
         let tgPollInFlight = false;
@@ -2088,7 +2300,11 @@
             const receiptText = count > 1
                 ? `👁 Прочитано на сайті (${count} шт.) ✓`
                 : '👁 Прочитано на сайті ✓';
-            const payload = { chat_id: TG_CHAT_ID, text: receiptText };
+            const payload = {
+                chat_id: TG_CHAT_ID,
+                text: receiptText,
+                reply_markup: TG_REPLY_MARKUP
+            };
             if (replyToMsgId) payload.reply_to_message_id = replyToMsgId;
 
             fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
@@ -2103,8 +2319,10 @@
             }).catch(() => {});
         }
 
+        let tgSyncReady = false;
+
         function pollTelegramUpdates() {
-            if (tgPollInFlight || document.visibilityState !== 'visible') return;
+            if (!tgSyncReady || tgPollInFlight || document.visibilityState !== 'visible') return;
             if (Date.now() < tgBackoffUntil) return;
 
             tgPollInFlight = true;
@@ -2140,6 +2358,9 @@
                 let addedOrUpdated = false;
                 let newMessagesShownCount = 0;
                 let lastNewMsgId = 0;
+                let latestProfileChanged = null;
+                let menuRequested = false;
+
                 updates.forEach(u => {
                     if (u.update_id <= prevHandledId) return;
 
@@ -2160,8 +2381,21 @@
                     const msg = u.message;
                     if (!isOwnerMessage(msg)) return;
 
-                    const trimmedCmd = (msg.text || '').trim().toLowerCase();
-                    if (trimmedCmd === '/start' || trimmedCmd === '/help' || trimmedCmd === '/clear' || trimmedCmd.startsWith('/clear ')) {
+                    const rawMsgText = (msg.text || '').trim();
+                    const trimmedCmd = rawMsgText.toLowerCase();
+                    if (trimmedCmd === '/clear' || trimmedCmd.startsWith('/clear ')) {
+                        return;
+                    }
+
+                    const senderCmd = parseSenderCommand(rawMsgText);
+                    if (senderCmd) {
+                        if (senderCmd.type === 'profile') {
+                            tgProfileUpdatedByCommand = true;
+                            latestProfileChanged = senderCmd.profile;
+                            setSenderProfile(senderCmd.profile, true);
+                        } else if (senderCmd.type === 'menu') {
+                            menuRequested = true;
+                        }
                         return;
                     }
 
@@ -2179,6 +2413,14 @@
                     addedOrUpdated = true;
                 });
 
+                if (latestProfileChanged) {
+                    sendTelegramNotification(`✅ Активний підпис на сайті: ${formatProfileBadge(latestProfileChanged)}`);
+                } else if (menuRequested) {
+                    sendTelegramNotification(
+                        `🎭 Поточний підпис: ${formatProfileBadge(tgSenderProfile)}\n\nОбирай шаблон кнопками нижче або пиши:\n/name Твоє ім'я`
+                    );
+                }
+
                 if (addedOrUpdated) {
                     showPopupForTenSeconds();
                 }
@@ -2194,8 +2436,12 @@
             });
         }
 
-        setTimeout(pollTelegramUpdates, 300);
-        setInterval(pollTelegramUpdates, 3000);
+        const tgInitialSync = syncProfileFromTelegram();
+        tgInitialSync.finally(() => {
+            tgSyncReady = true;
+            pollTelegramUpdates();
+            setInterval(pollTelegramUpdates, 3000);
+        });
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') pollTelegramUpdates();
         });
