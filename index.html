@@ -527,6 +527,158 @@
             100% { background-position: 240% center; }
         }
 
+        /* --- TELEGRAM LIVE MESSAGE POPUP --- */
+        .tg-popup {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            width: 380px;
+            max-width: calc(100vw - 48px);
+            background: rgba(14, 13, 12, 0.96);
+            backdrop-filter: blur(12px);
+            border: 1px solid #2e2a28;
+            border-top: 2px solid var(--accent-red);
+            box-shadow: 0 20px 55px rgba(0, 0, 0, 0.85);
+            z-index: 250;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transform: translateY(-18px) scale(0.98);
+            pointer-events: none;
+            transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+        }
+        .tg-popup.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        .tg-popup.flash {
+            box-shadow: 0 0 0 1px var(--accent-red), 0 20px 55px rgba(176, 42, 42, 0.35);
+        }
+        .tg-popup-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-bottom: 1px solid #24211f;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .tg-popup-sender {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--accent-yellow);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .tg-popup-sender .dot {
+            margin-right: 0;
+            animation: tgPulse 2s infinite;
+        }
+        @keyframes tgPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
+        }
+        .tg-popup-close {
+            background: transparent;
+            border: none;
+            color: #777;
+            font-family: var(--font-mono);
+            font-size: 1.25rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 2px 6px;
+            transition: color 0.2s;
+        }
+        .tg-popup-close:hover {
+            color: var(--accent-red);
+        }
+        .tg-popup-messages {
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 44vh;
+            overflow-y: auto;
+        }
+        .tg-msg {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 9px 12px;
+            background: #171514;
+            border-left: 2px solid var(--accent-red);
+            animation: trackFadeIn 0.28s ease forwards;
+        }
+        .tg-msg.outgoing {
+            align-self: flex-end;
+            max-width: 88%;
+            background: #121110;
+            border-left: none;
+            border-right: 2px solid var(--accent-yellow);
+        }
+        .tg-msg-photo {
+            display: block;
+            max-width: 100%;
+            max-height: 220px;
+            object-fit: cover;
+            border: 1px solid #2b2725;
+            margin-bottom: 4px;
+        }
+        .tg-msg-text {
+            font-family: var(--font-sans);
+            font-size: 0.92rem;
+            line-height: 1.5;
+            color: var(--text-main);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .tg-msg-time {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: #666;
+            align-self: flex-end;
+        }
+        .tg-popup-reply {
+            display: flex;
+            border-top: 1px solid #24211f;
+            background: #0a0908;
+        }
+        .tg-popup-input {
+            flex: 1;
+            min-width: 0;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            padding: 11px 12px;
+            outline: none;
+        }
+        .tg-popup-input::placeholder {
+            color: #555;
+        }
+        .tg-popup-send {
+            background: var(--accent-red);
+            border: none;
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            padding: 0 15px;
+            cursor: pointer;
+            transition: background 0.2s, opacity 0.2s;
+            flex-shrink: 0;
+        }
+        .tg-popup-send:hover {
+            background: #8a1f1f;
+        }
+        .tg-popup-send:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
         @media (max-width: 900px) {
             .hero { min-height: auto; padding: 70px 16px 55px; }
             .hero-layout { flex-direction: column; text-align: center; gap: 28px; }
@@ -575,6 +727,19 @@
             .fake-player.in-view img { filter: grayscale(0%) brightness(0.8) contrast(1.1); transform: scale(1.02); }
             .fake-player.in-view .play-overlay { color: var(--accent-red); transform: translate(-50%, -50%) scale(1.1); }
             .feedback-img.in-view { filter: grayscale(80%) brightness(0.6) contrast(1.3); }
+            .tg-popup {
+                top: max(12px, env(safe-area-inset-top, 12px));
+                left: 12px;
+                right: 12px;
+                width: auto;
+                max-width: none;
+            }
+            .tg-popup-messages {
+                max-height: 36vh;
+            }
+            .tg-popup-input {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
@@ -1388,6 +1553,19 @@
         <div class="thank-you-text">Дякую за відгук!</div>
     </div>
 
+    <!-- TELEGRAM LIVE MESSAGE POPUP -->
+    <div id="tgPopup" class="tg-popup" role="dialog" aria-live="polite" aria-label="Повідомлення від Дані">
+        <div class="tg-popup-header">
+            <span class="tg-popup-sender"><span class="dot red"></span> ВІД ДАНІ</span>
+            <button id="tgPopupClose" class="tg-popup-close" type="button" title="Закрити">&times;</button>
+        </div>
+        <div id="tgPopupMessages" class="tg-popup-messages"></div>
+        <form id="tgPopupReplyForm" class="tg-popup-reply">
+            <input id="tgPopupReplyInput" class="tg-popup-input" type="text" placeholder="Відповісти..." maxlength="1000" autocomplete="off">
+            <button id="tgPopupReplySend" class="tg-popup-send" type="submit" title="Надіслати">→</button>
+        </form>
+    </div>
+
     <script>
         // --- MODES LOGIC ---
         const instructionBtn = document.getElementById('instructionBtn');
@@ -1705,6 +1883,296 @@
                 })
             }).then(res => res.ok).catch(() => false);
         }
+
+        // --- TELEGRAM LIVE INCOMING MESSAGES ---
+        const tgPopup = document.getElementById('tgPopup');
+        const tgPopupClose = document.getElementById('tgPopupClose');
+        const tgPopupMessages = document.getElementById('tgPopupMessages');
+        const tgPopupReplyForm = document.getElementById('tgPopupReplyForm');
+        const tgPopupReplyInput = document.getElementById('tgPopupReplyInput');
+        const tgPopupReplySend = document.getElementById('tgPopupReplySend');
+
+        const TG_DISMISSED_KEY = 'spb_tg_dismissed_update_id_v1';
+        const TG_CLEAR_KEY = 'spb_tg_clear_update_id_v1';
+
+        function readStoredInt(key) {
+            try {
+                const v = localStorage.getItem(key);
+                const parsed = v !== null ? parseInt(v, 10) : 0;
+                return Number.isFinite(parsed) ? parsed : 0;
+            } catch (_) {
+                return 0;
+            }
+        }
+
+        function writeStoredInt(key, val) {
+            try {
+                localStorage.setItem(key, String(val));
+            } catch (_) {}
+        }
+
+        let tgDismissedUpdateId = readStoredInt(TG_DISMISSED_KEY);
+        let tgClearUpdateId = readStoredInt(TG_CLEAR_KEY);
+        let tgMaxShownUpdateId = 0;
+        let tgPollInFlight = false;
+        let tgBackoffUntil = 0;
+        let tgFlashTimer = null;
+        const tgRenderedByMsgId = new Map();
+
+        function formatTgTime(unixSec) {
+            const d = unixSec ? new Date(unixSec * 1000) : new Date();
+            const hh = String(d.getHours()).padStart(2, '0');
+            const mm = String(d.getMinutes()).padStart(2, '0');
+            return `${hh}:${mm}`;
+        }
+
+        function isOwnerMessage(msg) {
+            if (!msg || (msg.from && msg.from.is_bot)) return false;
+            const chatId = msg.chat ? String(msg.chat.id) : '';
+            const fromId = msg.from ? String(msg.from.id) : '';
+            return chatId === TG_CHAT_ID || fromId === TG_CHAT_ID;
+        }
+
+        function extractMessageDisplay(msg) {
+            const rawText = (msg.text || msg.caption || '').trim();
+            if (msg.photo && msg.photo.length) {
+                const chosen = msg.photo[Math.min(msg.photo.length - 1, 2)];
+                return { text: rawText, photoFileId: chosen.file_id };
+            }
+            if (rawText) return { text: rawText, photoFileId: null };
+            if (msg.sticker) {
+                const emoji = msg.sticker.emoji || '🏷';
+                return { text: `${emoji} (стікер)`, photoFileId: null };
+            }
+            if (msg.voice) return { text: '🎙 Голосове повідомлення', photoFileId: null };
+            if (msg.video_note) return { text: '🎥 Відеоповідомлення', photoFileId: null };
+            if (msg.video || msg.animation) return { text: '🎬 Відео / GIF', photoFileId: null };
+            if (msg.document) return { text: `📎 ${msg.document.file_name || 'Файл'}`, photoFileId: null };
+            return { text: '', photoFileId: null };
+        }
+
+        function attachTgPhoto(fileId, bubbleEl, textEl) {
+            fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/getFile`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                cache: 'no-store',
+                body: JSON.stringify({ file_id: fileId })
+            })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (!data || !data.ok || !data.result || !data.result.file_path) {
+                    if (!textEl.textContent) textEl.textContent = '📷 Фото';
+                    return;
+                }
+                const img = document.createElement('img');
+                img.className = 'tg-msg-photo';
+                img.alt = 'Фото';
+                img.src = `https://api.telegram.org/file/bot${TG_BOT_TOKEN}/${data.result.file_path}`;
+                img.onload = () => {
+                    tgPopupMessages.scrollTop = tgPopupMessages.scrollHeight;
+                };
+                img.onerror = () => {
+                    img.remove();
+                    if (!textEl.textContent) textEl.textContent = '📷 Фото';
+                };
+                bubbleEl.insertBefore(img, textEl);
+            })
+            .catch(() => {
+                if (!textEl.textContent) textEl.textContent = '📷 Фото';
+            });
+        }
+
+        function appendPopupMessage({ text, unixTime, outgoing, messageId, photoFileId }) {
+            const bubble = document.createElement('div');
+            bubble.className = 'tg-msg' + (outgoing ? ' outgoing' : '');
+
+            const textEl = document.createElement('div');
+            textEl.className = 'tg-msg-text';
+            textEl.textContent = text;
+            bubble.appendChild(textEl);
+
+            const timeEl = document.createElement('div');
+            timeEl.className = 'tg-msg-time';
+            timeEl.textContent = formatTgTime(unixTime);
+            bubble.appendChild(timeEl);
+
+            if (photoFileId) {
+                attachTgPhoto(photoFileId, bubble, textEl);
+            }
+
+            tgPopupMessages.appendChild(bubble);
+            tgPopupMessages.scrollTop = tgPopupMessages.scrollHeight;
+
+            if (!outgoing && messageId) {
+                tgRenderedByMsgId.set(messageId, { textEl, timeEl });
+            }
+        }
+
+        function flashAndShowPopup() {
+            const wasVisible = tgPopup.classList.contains('visible');
+            tgPopup.classList.add('visible');
+            if (wasVisible) {
+                tgPopup.classList.remove('flash');
+                void tgPopup.offsetWidth;
+                tgPopup.classList.add('flash');
+                clearTimeout(tgFlashTimer);
+                tgFlashTimer = setTimeout(() => tgPopup.classList.remove('flash'), 700);
+            }
+        }
+
+        function resetPopupMessages() {
+            tgPopup.classList.remove('visible');
+            tgPopupMessages.textContent = '';
+            tgRenderedByMsgId.clear();
+        }
+
+        tgPopupClose.addEventListener('click', () => {
+            if (tgMaxShownUpdateId > tgDismissedUpdateId) {
+                tgDismissedUpdateId = tgMaxShownUpdateId;
+                writeStoredInt(TG_DISMISSED_KEY, tgDismissedUpdateId);
+            }
+            resetPopupMessages();
+        });
+
+        tgPopupReplyForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const replyText = tgPopupReplyInput.value.trim();
+            if (!replyText) return;
+
+            tgPopupReplySend.disabled = true;
+            sendTelegramNotification(`💬 Іннулік: ${replyText}`).then(ok => {
+                tgPopupReplySend.disabled = false;
+                if (ok) {
+                    tgPopupReplyInput.value = '';
+                    tgPopupReplyInput.placeholder = 'Відповісти...';
+                    appendPopupMessage({
+                        text: replyText,
+                        unixTime: Math.floor(Date.now() / 1000),
+                        outgoing: true
+                    });
+                } else {
+                    tgPopupReplyInput.placeholder = 'Не вдалося надіслати, спробуй ще';
+                }
+            });
+        });
+
+        function pollTelegramUpdates() {
+            if (tgPollInFlight || document.visibilityState !== 'visible') return;
+            if (Date.now() < tgBackoffUntil) return;
+
+            tgPollInFlight = true;
+            fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/getUpdates`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                cache: 'no-store',
+                body: JSON.stringify({
+                    limit: 100,
+                    allowed_updates: ['message', 'edited_message']
+                })
+            })
+            .then(res => {
+                if (!res.ok) {
+                    tgBackoffUntil = Date.now() + 15000;
+                    return null;
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (!data || !data.ok || !Array.isArray(data.result)) return;
+                const updates = data.result;
+                if (updates.length === 0) return;
+
+                // Keep buffer below Telegram's 100-item cap while retaining recent 50 updates for other tabs/devices
+                if (updates.length >= 95) {
+                    const trimOffset = updates[updates.length - 50].update_id;
+                    fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/getUpdates`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        cache: 'no-store',
+                        body: JSON.stringify({ offset: trimOffset, limit: 1 })
+                    }).catch(() => {});
+                }
+
+                let latestClearInBatch = tgClearUpdateId;
+                updates.forEach(u => {
+                    const m = u.message;
+                    if (!isOwnerMessage(m)) return;
+                    const cmd = (m.text || '').trim().toLowerCase();
+                    if (cmd === '/clear' || cmd.startsWith('/clear ')) {
+                        if (u.update_id > latestClearInBatch) {
+                            latestClearInBatch = u.update_id;
+                        }
+                    }
+                });
+
+                if (latestClearInBatch > tgClearUpdateId) {
+                    tgClearUpdateId = latestClearInBatch;
+                    writeStoredInt(TG_CLEAR_KEY, tgClearUpdateId);
+                    if (tgMaxShownUpdateId <= tgClearUpdateId) {
+                        resetPopupMessages();
+                    }
+                }
+
+                const minAllowedId = Math.max(tgDismissedUpdateId, tgClearUpdateId, tgMaxShownUpdateId);
+                let addedAny = false;
+
+                updates.forEach(u => {
+                    if (u.edited_message && isOwnerMessage(u.edited_message)) {
+                        const em = u.edited_message;
+                        const existing = tgRenderedByMsgId.get(em.message_id);
+                        if (existing) {
+                            const { text } = extractMessageDisplay(em);
+                            if (text) {
+                                existing.textEl.textContent = text;
+                                existing.timeEl.textContent = formatTgTime(em.edit_date || em.date) + ' · ред.';
+                            }
+                        }
+                        return;
+                    }
+
+                    if (u.update_id <= minAllowedId) return;
+                    const msg = u.message;
+                    if (!isOwnerMessage(msg)) return;
+
+                    const trimmedCmd = (msg.text || '').trim().toLowerCase();
+                    if (trimmedCmd === '/start' || trimmedCmd === '/help' || trimmedCmd === '/clear' || trimmedCmd.startsWith('/clear ')) {
+                        return;
+                    }
+
+                    const { text, photoFileId } = extractMessageDisplay(msg);
+                    if (!text && !photoFileId) return;
+
+                    appendPopupMessage({
+                        text: text,
+                        unixTime: msg.date,
+                        outgoing: false,
+                        messageId: msg.message_id,
+                        photoFileId: photoFileId
+                    });
+                    if (u.update_id > tgMaxShownUpdateId) {
+                        tgMaxShownUpdateId = u.update_id;
+                    }
+                    addedAny = true;
+                });
+
+                if (addedAny) {
+                    flashAndShowPopup();
+                }
+            })
+            .catch(() => {
+                tgBackoffUntil = Date.now() + 15000;
+            })
+            .finally(() => {
+                tgPollInFlight = false;
+            });
+        }
+
+        setTimeout(pollTelegramUpdates, 700);
+        setInterval(pollTelegramUpdates, 3500);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') pollTelegramUpdates();
+        });
+        window.addEventListener('focus', pollTelegramUpdates);
 
         // --- ANIMATIONS ---
         const catImg = document.getElementById('catImage');
