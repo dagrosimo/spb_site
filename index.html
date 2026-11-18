@@ -288,6 +288,8 @@
         .brutalist-btn { background: var(--accent-red); color: #fff; font-family: var(--font-mono); font-size: 0.9rem; text-transform: uppercase; border: none; padding: 15px; cursor: pointer; transition: background 0.2s; }
         .brutalist-btn:hover { background: #8a1f1f; }
         .success-banner { display: none; background: #111; border-left: 3px solid var(--accent-yellow); padding: 20px; font-family: var(--font-mono); font-size: 0.9rem; color: var(--accent-yellow); line-height: 1.5; }
+        .write-more-btn { display: inline-block; margin-top: 14px; background: transparent; color: #999; border: 1px dashed #444; padding: 6px 12px; font-family: var(--font-mono); font-size: 0.75rem; cursor: pointer; transition: color 0.2s, border-color 0.2s; }
+        .write-more-btn:hover { color: var(--text-main); border-color: var(--accent-red); }
 
         .footer { text-align: center; padding: 40px 20px; border-top: 1px solid #222; font-family: var(--font-mono); font-size: 0.8rem; color: #555; background-color: #000; transition: padding-bottom 0.35s ease; }
         body.player-open .footer { padding-bottom: 120px; }
@@ -542,6 +544,7 @@
             z-index: 250;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
             opacity: 0;
             transform: translateY(-18px) scale(0.98);
             pointer-events: none;
@@ -568,18 +571,22 @@
             align-items: center;
             gap: 8px;
             font-family: var(--font-mono);
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             color: var(--accent-yellow);
             letter-spacing: 0.1em;
             text-transform: uppercase;
+            font-weight: 700;
         }
-        .tg-popup-sender .dot {
-            margin-right: 0;
-            animation: tgPulse 2s infinite;
+        .tg-crown {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            filter: drop-shadow(0 0 6px rgba(212, 163, 85, 0.65));
+            animation: crownFloat 2.6s ease-in-out infinite;
         }
-        @keyframes tgPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.35; }
+        @keyframes crownFloat {
+            0%, 100% { transform: translateY(0) rotate(-3deg); }
+            50% { transform: translateY(-2px) rotate(3deg); }
         }
         .tg-popup-close {
             background: transparent;
@@ -596,7 +603,7 @@
             color: var(--accent-red);
         }
         .tg-popup-messages {
-            padding: 12px 14px;
+            padding: 12px 14px 14px;
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -607,17 +614,10 @@
             display: flex;
             flex-direction: column;
             gap: 5px;
-            padding: 9px 12px;
+            padding: 10px 12px;
             background: #171514;
             border-left: 2px solid var(--accent-red);
             animation: trackFadeIn 0.28s ease forwards;
-        }
-        .tg-msg.outgoing {
-            align-self: flex-end;
-            max-width: 88%;
-            background: #121110;
-            border-left: none;
-            border-right: 2px solid var(--accent-yellow);
         }
         .tg-msg-photo {
             display: block;
@@ -629,11 +629,23 @@
         }
         .tg-msg-text {
             font-family: var(--font-sans);
-            font-size: 0.92rem;
+            font-size: 0.96rem;
             line-height: 1.5;
-            color: var(--text-main);
             white-space: pre-wrap;
             word-break: break-word;
+        }
+        .tg-rainbow-text {
+            background: linear-gradient(120deg, #ff6b9d, #ffd166, #5cf2b5, #5cd6ff, #c98cff, #ff6b9d);
+            background-size: 240% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 500;
+            animation: thankYouShimmer 3.2s linear infinite;
+            filter: drop-shadow(0 1px 6px rgba(0, 0, 0, 0.75));
+        }
+        .tg-msg-emoji {
+            color: #f0f0f0;
         }
         .tg-msg-time {
             font-family: var(--font-mono);
@@ -641,42 +653,24 @@
             color: #666;
             align-self: flex-end;
         }
-        .tg-popup-reply {
-            display: flex;
-            border-top: 1px solid #24211f;
-            background: #0a0908;
+        .tg-popup-timer {
+            height: 2px;
+            width: 100%;
+            background: #1e1b19;
+            overflow: hidden;
         }
-        .tg-popup-input {
-            flex: 1;
-            min-width: 0;
-            background: transparent;
-            border: none;
-            color: var(--text-main);
-            font-family: var(--font-mono);
-            font-size: 0.82rem;
-            padding: 11px 12px;
-            outline: none;
+        .tg-popup-timer-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #ff6b9d, #ffd166, #5cf2b5, #5cd6ff, #c98cff);
+            transform-origin: left center;
         }
-        .tg-popup-input::placeholder {
-            color: #555;
+        .tg-popup-timer-fill.running {
+            animation: tgTimerShrink 10s linear forwards;
         }
-        .tg-popup-send {
-            background: var(--accent-red);
-            border: none;
-            color: #fff;
-            font-family: var(--font-mono);
-            font-size: 0.9rem;
-            padding: 0 15px;
-            cursor: pointer;
-            transition: background 0.2s, opacity 0.2s;
-            flex-shrink: 0;
-        }
-        .tg-popup-send:hover {
-            background: #8a1f1f;
-        }
-        .tg-popup-send:disabled {
-            opacity: 0.5;
-            cursor: default;
+        @keyframes tgTimerShrink {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
         }
 
         @media (max-width: 900px) {
@@ -736,9 +730,6 @@
             }
             .tg-popup-messages {
                 max-height: 36vh;
-            }
-            .tg-popup-input {
-                font-size: 16px;
             }
         }
     </style>
@@ -1501,7 +1492,8 @@
 
                 <!-- ПЕРСОНАЛЬНЫЙ ТЕКСТ: ответ после отправки формы -->
                 <div id="success-banner" class="success-banner">
-                    Досить бавитись, просто напиши мені в лс, Іннулік
+                    <div>Досить бавитись, просто напиши мені в лс, Іннулік</div>
+                    <button id="writeMoreBtn" class="write-more-btn" type="button">Я не договорила...</button>
                 </div>
             </div>
         </div>
@@ -1556,14 +1548,27 @@
     <!-- TELEGRAM LIVE MESSAGE POPUP -->
     <div id="tgPopup" class="tg-popup" role="dialog" aria-live="polite" aria-label="Повідомлення від Дані">
         <div class="tg-popup-header">
-            <span class="tg-popup-sender"><span class="dot red"></span> ВІД ДАНІ</span>
+            <span class="tg-popup-sender">
+                <svg class="tg-crown" viewBox="0 0 24 24" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="tgCrownGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#fff0a8"></stop>
+                            <stop offset="50%" stop-color="#d4a355"></stop>
+                            <stop offset="100%" stop-color="#9c6e24"></stop>
+                        </linearGradient>
+                    </defs>
+                    <path fill="url(#tgCrownGrad)" d="M3 18h18v2H3v-2zm0-2L2 7l5.5 4.2L12 4l4.5 7.2L22 7l-1 9H3z"></path>
+                    <circle cx="12" cy="3.4" r="1.4" fill="#ff4d8d"></circle>
+                    <circle cx="2" cy="6.4" r="1.1" fill="#ffe082"></circle>
+                    <circle cx="22" cy="6.4" r="1.1" fill="#ffe082"></circle>
+                    <circle cx="12" cy="13.2" r="1.2" fill="#b02a2a"></circle>
+                </svg>
+                <span>ВІД ДАНІ</span>
+            </span>
             <button id="tgPopupClose" class="tg-popup-close" type="button" title="Закрити">&times;</button>
         </div>
         <div id="tgPopupMessages" class="tg-popup-messages"></div>
-        <form id="tgPopupReplyForm" class="tg-popup-reply">
-            <input id="tgPopupReplyInput" class="tg-popup-input" type="text" placeholder="Відповісти..." maxlength="1000" autocomplete="off">
-            <button id="tgPopupReplySend" class="tg-popup-send" type="submit" title="Надіслати">→</button>
-        </form>
+        <div class="tg-popup-timer" aria-hidden="true"><div id="tgPopupTimerFill" class="tg-popup-timer-fill"></div></div>
     </div>
 
     <script>
@@ -1884,40 +1889,26 @@
             }).then(res => res.ok).catch(() => false);
         }
 
-        // --- TELEGRAM LIVE INCOMING MESSAGES ---
+        // --- TELEGRAM LIVE INCOMING MESSAGES (ONE-TIME READ + 10s AUTO-HIDE) ---
         const tgPopup = document.getElementById('tgPopup');
         const tgPopupClose = document.getElementById('tgPopupClose');
         const tgPopupMessages = document.getElementById('tgPopupMessages');
-        const tgPopupReplyForm = document.getElementById('tgPopupReplyForm');
-        const tgPopupReplyInput = document.getElementById('tgPopupReplyInput');
-        const tgPopupReplySend = document.getElementById('tgPopupReplySend');
+        const tgPopupTimerFill = document.getElementById('tgPopupTimerFill');
 
-        const TG_DISMISSED_KEY = 'spb_tg_dismissed_update_id_v1';
-        const TG_CLEAR_KEY = 'spb_tg_clear_update_id_v1';
-
-        function readStoredInt(key) {
-            try {
-                const v = localStorage.getItem(key);
-                const parsed = v !== null ? parseInt(v, 10) : 0;
-                return Number.isFinite(parsed) ? parsed : 0;
-            } catch (_) {
-                return 0;
-            }
-        }
-
-        function writeStoredInt(key, val) {
-            try {
-                localStorage.setItem(key, String(val));
-            } catch (_) {}
-        }
-
-        let tgDismissedUpdateId = readStoredInt(TG_DISMISSED_KEY);
-        let tgClearUpdateId = readStoredInt(TG_CLEAR_KEY);
-        let tgMaxShownUpdateId = 0;
+        const TG_DISPLAY_MS = 10000;
+        let tgNextOffset = 0;
+        let tgHighestHandledId = 0;
         let tgPollInFlight = false;
         let tgBackoffUntil = 0;
         let tgFlashTimer = null;
+        let tgAutoHideTimer = null;
+        let tgClearContentTimer = null;
         const tgRenderedByMsgId = new Map();
+
+        let tgEmojiRegex = null;
+        try {
+            tgEmojiRegex = new RegExp('(\\p{Extended_Pictographic}(?:\\uFE0F|\\u200D\\p{Extended_Pictographic})*)', 'gu');
+        } catch (_) {}
 
         function formatTgTime(unixSec) {
             const d = unixSec ? new Date(unixSec * 1000) : new Date();
@@ -1951,17 +1942,51 @@
             return { text: '', photoFileId: null };
         }
 
+        function renderRainbowText(container, text) {
+            container.textContent = '';
+            if (!text) return;
+
+            if (!tgEmojiRegex) {
+                const span = document.createElement('span');
+                span.className = 'tg-rainbow-text';
+                span.textContent = text;
+                container.appendChild(span);
+                return;
+            }
+
+            tgEmojiRegex.lastIndex = 0;
+            let lastIdx = 0;
+            let match;
+            while ((match = tgEmojiRegex.exec(text)) !== null) {
+                if (match.index > lastIdx) {
+                    const textSpan = document.createElement('span');
+                    textSpan.className = 'tg-rainbow-text';
+                    textSpan.textContent = text.slice(lastIdx, match.index);
+                    container.appendChild(textSpan);
+                }
+                const emojiSpan = document.createElement('span');
+                emojiSpan.className = 'tg-msg-emoji';
+                emojiSpan.textContent = match[0];
+                container.appendChild(emojiSpan);
+                lastIdx = tgEmojiRegex.lastIndex;
+            }
+
+            if (lastIdx < text.length) {
+                const tailSpan = document.createElement('span');
+                tailSpan.className = 'tg-rainbow-text';
+                tailSpan.textContent = text.slice(lastIdx);
+                container.appendChild(tailSpan);
+            }
+        }
+
         function attachTgPhoto(fileId, bubbleEl, textEl) {
-            fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/getFile`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                cache: 'no-store',
-                body: JSON.stringify({ file_id: fileId })
+            fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/getFile?file_id=${encodeURIComponent(fileId)}&_t=${Date.now()}`, {
+                cache: 'no-store'
             })
             .then(res => res.ok ? res.json() : null)
             .then(data => {
                 if (!data || !data.ok || !data.result || !data.result.file_path) {
-                    if (!textEl.textContent) textEl.textContent = '📷 Фото';
+                    if (!textEl.textContent) renderRainbowText(textEl, '📷 Фото');
                     return;
                 }
                 const img = document.createElement('img');
@@ -1973,22 +1998,64 @@
                 };
                 img.onerror = () => {
                     img.remove();
-                    if (!textEl.textContent) textEl.textContent = '📷 Фото';
+                    if (!textEl.textContent) renderRainbowText(textEl, '📷 Фото');
                 };
                 bubbleEl.insertBefore(img, textEl);
             })
             .catch(() => {
-                if (!textEl.textContent) textEl.textContent = '📷 Фото';
+                if (!textEl.textContent) renderRainbowText(textEl, '📷 Фото');
             });
         }
 
-        function appendPopupMessage({ text, unixTime, outgoing, messageId, photoFileId }) {
+        function hidePopupImmediately() {
+            clearTimeout(tgAutoHideTimer);
+            clearTimeout(tgClearContentTimer);
+            tgPopup.classList.remove('visible');
+            tgPopupTimerFill.classList.remove('running');
+            tgClearContentTimer = setTimeout(() => {
+                if (!tgPopup.classList.contains('visible')) {
+                    tgPopupMessages.textContent = '';
+                    tgRenderedByMsgId.clear();
+                }
+            }, 380);
+        }
+
+        function showPopupForTenSeconds() {
+            clearTimeout(tgAutoHideTimer);
+            clearTimeout(tgClearContentTimer);
+
+            const wasVisible = tgPopup.classList.contains('visible');
+            tgPopup.classList.add('visible');
+
+            if (wasVisible) {
+                tgPopup.classList.remove('flash');
+                void tgPopup.offsetWidth;
+                tgPopup.classList.add('flash');
+                clearTimeout(tgFlashTimer);
+                tgFlashTimer = setTimeout(() => tgPopup.classList.remove('flash'), 700);
+            }
+
+            tgPopupTimerFill.classList.remove('running');
+            void tgPopupTimerFill.offsetWidth;
+            tgPopupTimerFill.classList.add('running');
+
+            tgAutoHideTimer = setTimeout(() => {
+                hidePopupImmediately();
+            }, TG_DISPLAY_MS);
+        }
+
+        function appendPopupMessage({ text, unixTime, messageId, photoFileId }) {
+            if (!tgPopup.classList.contains('visible') && tgPopupMessages.children.length > 0) {
+                tgPopupMessages.textContent = '';
+                tgRenderedByMsgId.clear();
+            }
+
             const bubble = document.createElement('div');
-            bubble.className = 'tg-msg' + (outgoing ? ' outgoing' : '');
+            bubble.className = 'tg-msg';
 
             const textEl = document.createElement('div');
             textEl.className = 'tg-msg-text';
-            textEl.textContent = text;
+            renderRainbowText(textEl, text);
             bubble.appendChild(textEl);
 
             const timeEl = document.createElement('div');
@@ -2003,72 +2070,47 @@
             tgPopupMessages.appendChild(bubble);
             tgPopupMessages.scrollTop = tgPopupMessages.scrollHeight;
 
-            if (!outgoing && messageId) {
+            if (messageId) {
                 tgRenderedByMsgId.set(messageId, { textEl, timeEl });
             }
         }
 
-        function flashAndShowPopup() {
-            const wasVisible = tgPopup.classList.contains('visible');
-            tgPopup.classList.add('visible');
-            if (wasVisible) {
-                tgPopup.classList.remove('flash');
-                void tgPopup.offsetWidth;
-                tgPopup.classList.add('flash');
-                clearTimeout(tgFlashTimer);
-                tgFlashTimer = setTimeout(() => tgPopup.classList.remove('flash'), 700);
-            }
+        tgPopupClose.addEventListener('click', hidePopupImmediately);
+
+        function acknowledgeUpdatesOnServer(nextOffset) {
+            fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/getUpdates?offset=${nextOffset}&limit=1&_t=${Date.now()}`, {
+                cache: 'no-store',
+                keepalive: true
+            }).catch(() => {});
         }
 
-        function resetPopupMessages() {
-            tgPopup.classList.remove('visible');
-            tgPopupMessages.textContent = '';
-            tgRenderedByMsgId.clear();
-        }
+        function sendTelegramReadReceipt(replyToMsgId, count) {
+            const receiptText = count > 1
+                ? `👁 Прочитано на сайті (${count} шт.) ✓`
+                : '👁 Прочитано на сайті ✓';
+            const payload = { chat_id: TG_CHAT_ID, text: receiptText };
+            if (replyToMsgId) payload.reply_to_message_id = replyToMsgId;
 
-        tgPopupClose.addEventListener('click', () => {
-            if (tgMaxShownUpdateId > tgDismissedUpdateId) {
-                tgDismissedUpdateId = tgMaxShownUpdateId;
-                writeStoredInt(TG_DISMISSED_KEY, tgDismissedUpdateId);
-            }
-            resetPopupMessages();
-        });
-
-        tgPopupReplyForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const replyText = tgPopupReplyInput.value.trim();
-            if (!replyText) return;
-
-            tgPopupReplySend.disabled = true;
-            sendTelegramNotification(`💬 Іннулік: ${replyText}`).then(ok => {
-                tgPopupReplySend.disabled = false;
-                if (ok) {
-                    tgPopupReplyInput.value = '';
-                    tgPopupReplyInput.placeholder = 'Відповісти...';
-                    appendPopupMessage({
-                        text: replyText,
-                        unixTime: Math.floor(Date.now() / 1000),
-                        outgoing: true
-                    });
-                } else {
-                    tgPopupReplyInput.placeholder = 'Не вдалося надіслати, спробуй ще';
+            fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                keepalive: true,
+                body: JSON.stringify(payload)
+            }).then(res => {
+                if (!res.ok && replyToMsgId) {
+                    sendTelegramNotification(receiptText);
                 }
-            });
-        });
+            }).catch(() => {});
+        }
 
         function pollTelegramUpdates() {
             if (tgPollInFlight || document.visibilityState !== 'visible') return;
             if (Date.now() < tgBackoffUntil) return;
 
             tgPollInFlight = true;
-            fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/getUpdates`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                cache: 'no-store',
-                body: JSON.stringify({
-                    limit: 100,
-                    allowed_updates: ['message', 'edited_message']
-                })
+            const offsetParam = tgNextOffset > 0 ? `&offset=${tgNextOffset}` : '';
+            fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/getUpdates?limit=100${offsetParam}&_t=${Date.now()}`, {
+                cache: 'no-store'
             })
             .then(res => {
                 if (!res.ok) {
@@ -2082,55 +2124,39 @@
                 const updates = data.result;
                 if (updates.length === 0) return;
 
-                // Keep buffer below Telegram's 100-item cap while retaining recent 50 updates for other tabs/devices
-                if (updates.length >= 95) {
-                    const trimOffset = updates[updates.length - 50].update_id;
-                    fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/getUpdates`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        cache: 'no-store',
-                        body: JSON.stringify({ offset: trimOffset, limit: 1 })
-                    }).catch(() => {});
-                }
-
-                let latestClearInBatch = tgClearUpdateId;
+                let maxIdInBatch = 0;
                 updates.forEach(u => {
-                    const m = u.message;
-                    if (!isOwnerMessage(m)) return;
-                    const cmd = (m.text || '').trim().toLowerCase();
-                    if (cmd === '/clear' || cmd.startsWith('/clear ')) {
-                        if (u.update_id > latestClearInBatch) {
-                            latestClearInBatch = u.update_id;
-                        }
-                    }
+                    if (u.update_id > maxIdInBatch) maxIdInBatch = u.update_id;
                 });
 
-                if (latestClearInBatch > tgClearUpdateId) {
-                    tgClearUpdateId = latestClearInBatch;
-                    writeStoredInt(TG_CLEAR_KEY, tgClearUpdateId);
-                    if (tgMaxShownUpdateId <= tgClearUpdateId) {
-                        resetPopupMessages();
-                    }
+                const prevHandledId = tgHighestHandledId;
+                if (maxIdInBatch > tgHighestHandledId) {
+                    tgHighestHandledId = maxIdInBatch;
+                    tgNextOffset = maxIdInBatch + 1;
+                    // Mark received updates as permanently READ on Telegram's server
+                    acknowledgeUpdatesOnServer(tgNextOffset);
                 }
 
-                const minAllowedId = Math.max(tgDismissedUpdateId, tgClearUpdateId, tgMaxShownUpdateId);
-                let addedAny = false;
-
+                let addedOrUpdated = false;
+                let newMessagesShownCount = 0;
+                let lastNewMsgId = 0;
                 updates.forEach(u => {
+                    if (u.update_id <= prevHandledId) return;
+
                     if (u.edited_message && isOwnerMessage(u.edited_message)) {
                         const em = u.edited_message;
                         const existing = tgRenderedByMsgId.get(em.message_id);
                         if (existing) {
                             const { text } = extractMessageDisplay(em);
                             if (text) {
-                                existing.textEl.textContent = text;
+                                renderRainbowText(existing.textEl, text);
                                 existing.timeEl.textContent = formatTgTime(em.edit_date || em.date) + ' · ред.';
+                                addedOrUpdated = true;
                             }
                         }
                         return;
                     }
 
-                    if (u.update_id <= minAllowedId) return;
                     const msg = u.message;
                     if (!isOwnerMessage(msg)) return;
 
@@ -2145,18 +2171,19 @@
                     appendPopupMessage({
                         text: text,
                         unixTime: msg.date,
-                        outgoing: false,
                         messageId: msg.message_id,
                         photoFileId: photoFileId
                     });
-                    if (u.update_id > tgMaxShownUpdateId) {
-                        tgMaxShownUpdateId = u.update_id;
-                    }
-                    addedAny = true;
+                    newMessagesShownCount++;
+                    lastNewMsgId = msg.message_id;
+                    addedOrUpdated = true;
                 });
 
-                if (addedAny) {
-                    flashAndShowPopup();
+                if (addedOrUpdated) {
+                    showPopupForTenSeconds();
+                }
+                if (newMessagesShownCount > 0) {
+                    sendTelegramReadReceipt(lastNewMsgId, newMessagesShownCount);
                 }
             })
             .catch(() => {
@@ -2167,8 +2194,8 @@
             });
         }
 
-        setTimeout(pollTelegramUpdates, 700);
-        setInterval(pollTelegramUpdates, 3500);
+        setTimeout(pollTelegramUpdates, 300);
+        setInterval(pollTelegramUpdates, 3000);
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') pollTelegramUpdates();
         });
@@ -2401,7 +2428,24 @@
         // --- FORM SUBMIT ---
         const form = document.getElementById('realFeedbackForm');
         const successBanner = document.getElementById('success-banner');
+        const writeMoreBtn = document.getElementById('writeMoreBtn');
         const formError = document.getElementById('formError');
+
+        writeMoreBtn.addEventListener('click', () => {
+            const messageField = form.querySelector('textarea[name="message"]');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (messageField) messageField.value = '';
+            if (submitBtn) {
+                submitBtn.textContent = 'На свій страх і ризик';
+                submitBtn.style.opacity = '1';
+                submitBtn.disabled = false;
+            }
+            formError.style.display = 'none';
+            formError.textContent = '';
+            successBanner.style.display = 'none';
+            form.style.display = 'flex';
+            if (messageField) messageField.focus();
+        });
 
         form.addEventListener('submit', function(e) {
             e.preventDefault();
